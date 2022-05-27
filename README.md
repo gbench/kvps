@@ -22,7 +22,7 @@ E:/slicee/temp/snowwhite/kvps/devops/proj/proj001.json
 ```java   
 // 为了简化类型书写，这里使用 java 11 的 编码风格
 final var msgname = message.str("msgname");  
-const var params = message.llS("keys").map(kvps::get).map(IRecord:REC).toArray(IRecord[]::new);  
+final var params = message.llS("keys").map(kvps::get).map(IRecord:REC).toArray(IRecord[]::new);  
 switch(msgname){  
   case "reqdec":{ //  
     // 需求分析  
