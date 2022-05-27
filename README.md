@@ -20,13 +20,14 @@ E:/slicee/temp/snowwhite/kvps/devops/proj/proj001.json
 我们可以通过msgname 判断，事件的类型，一个 各个keys的数据毅力，然后通过 KVPS 进行具体的 实体数据 （master data) 的获取。进而 实现 相应的业务。
 我们程序可以采用：  
 ```java   
-const msgname = message.str("msgname");  
-const params = message.llS("keys").map(kvps::get).map(IRecord:REC).toArray(IRecord[]::new);  
+// 为了简化类型书写，这里使用 java 11 的 编码风格
+final var msgname = message.str("msgname");  
+const var params = message.llS("keys").map(kvps::get).map(IRecord:REC).toArray(IRecord[]::new);  
 switch(msgname){  
   case "reqdec":{ //  
     // 需求分析  
-    const IRecord proj = params[1]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。  
-    const IRecord reqdoc = params[2]; // 需求文档 的 json  
+    final var  proj = params[1]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。  
+    final var  reqdoc = params[2]; // 需求文档 的 json  
     handle_reqdec(proj,reqdoc); // 需求分解的具体逻辑  
     break;  
   }  
