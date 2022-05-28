@@ -1,4 +1,4 @@
-# KVPS
+# KVPS (Key Value Pairs)
 键值对儿数据库
 
 1) 启动 KVSAPPlication：/kvps/src/main/java/gbench/whccb/kvps/apl/KVPSApplication.java
