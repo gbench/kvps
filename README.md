@@ -60,4 +60,4 @@ switch(msgname){
 KVPS 我们也可采用文件系统来进行实现。
 以上 就是 就我推荐 KVPS 的 理由。
 7） KVPS 结构
-![KVPS 结构][https://github.com/gbench/kvps/raw/main/imgs/kvps%20structure%20dump.png]
+![KVPS 结构](https://github.com/gbench/kvps/raw/main/imgs/kvps%20structure%20dump.png)
