@@ -404,8 +404,8 @@ public class DevOpsJunit {
          * 不存在则创建，存在则读取，乐观锁模式，也就是 假设数据是存在的，不存在则写入 <br>
          * 
          * @param bz_key 业务key
-         * @param lines  业务值
-         * @return
+         * @param lines  业务值，默认值
+         * @return bz_key 所对应数据值
          */
         public IRecord computeIfAbsent(final String bz_key, final IRecord lines) {
             final IRecord bzreg = this.bz_registry();
@@ -432,8 +432,8 @@ public class DevOpsJunit {
          * 业务key 的计算
          * 
          * @param bz_key 业务key
-         * @param lines  业务值
-         * @return
+         * @param lines  业务值，更新值
+         * @return bz_key 所对应的 数据值
          */
         public IRecord computeIfPresent(final String bz_key, final IRecord lines) {
             final IRecord reg = this.bz_registry();
@@ -452,7 +452,7 @@ public class DevOpsJunit {
                 this.put(bz_registry_key, reg.add(bz_key, gen_get_url)); // 更新注册key
                 // this.put(gen_key, lines);
                 send2(gen_put_url, REC("key", gen_key, "lines", lines.json())); // 写入 与 this.put(gen_key, lines) 等价
-                return send2(gen_get_url, lines); // 直接读
+                return send2(gen_get_url, REC()); // 直接读
             }
         }
 
