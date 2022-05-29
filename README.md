@@ -59,4 +59,4 @@ switch(msgname){
 传递数据，其实 并不是 低效，相反还很高效。同时，由于 两个系统（ITSM，DEVOPS）交互场景不多，这种间接带来的损耗就微乎其微多了，这也是 为何 
 KVPS 我们也可采用文件系统来进行实现。
 以上 就是 就我推荐 KVPS 的 理由。
-7）![KVPS 存储结构](/imgs/kvps%20structure%20dump.png)
+7）![KVPS 存储结构](https://github.com/gbench/kvps/raw/main/imgs/kvps%20structure%20dump.jpg)
