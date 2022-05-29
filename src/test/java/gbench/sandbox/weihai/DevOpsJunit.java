@@ -568,7 +568,8 @@ public class DevOpsJunit {
     @Test
     public void qux3() {
         final KVPS kvps = new KVPS();
-        // println(kvps.registry());
+        // 查看业务键结构
+        println(kvps.bz_registry());
         final String bz_key = "proj001";
         println(kvps.generate_url(bz_key));
         // 读取&初始写：不存在则创建，存在则读取，乐观锁模式，也就是 假设数据是存在的，不存在则写入
