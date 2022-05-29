@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
@@ -348,6 +350,7 @@ public class DevOpsJunit {
      */
     public static class KVPS {
         final String host = "http://localhost:8089";
+        final String bz_registry_key = "E:/slicee/temp/snowwhite/kvps/registry.json";
 
         /**
          * 写入
@@ -385,6 +388,89 @@ public class DevOpsJunit {
             final String url2 = IRecord.FT("$0$1$2", host, "/snowwhite/media/file/download?key=", key);
             final IRecord response = send2(url2, REC());
             return response;
+        }
+
+        /**
+         * biz key 的注册表
+         * 
+         * @return
+         */
+        public IRecord bz_registry() {
+            return this.get(bz_registry_key);
+        }
+
+        /**
+         * 业务key 的计算 <br>
+         * 不存在则创建，存在则读取，乐观锁模式，也就是 假设数据是存在的，不存在则写入 <br>
+         * 
+         * @param bz_key 业务key
+         * @param lines  业务值
+         * @return
+         */
+        public IRecord computeIfAbsent(final String bz_key, final IRecord lines) {
+            final IRecord bzreg = this.bz_registry();
+            if (bzreg.size() < 0) {
+                this.put(this.bz_registry_key, REC());
+            }
+
+            final IRecord gen_url = this.generate_url(bz_key); // 生成URL
+            final String gen_put_url = gen_url.str("gen_put_url");
+            final String gen_get_url = gen_url.str("gen_get_url");
+            final String gen_key = gen_url.str("gen_key");
+            final String reg_get_url = bzreg.str(bz_key);
+            if (reg_get_url == null) {
+                this.put(bz_registry_key, bzreg.add(bz_key, gen_get_url)); // 登记 key
+                // this.put(gen_key, lines);
+                send2(gen_put_url, REC("key", gen_key, "lines", lines.json())); // 写入 与 this.put(gen_key, lines) 等价
+                return this.get(gen_key);
+            } else { // 注册表的读取url
+                return send2(reg_get_url, REC()); // 直接读
+            }
+        }
+
+        /**
+         * 业务key 的计算
+         * 
+         * @param bz_key 业务key
+         * @param lines  业务值
+         * @return
+         */
+        public IRecord computeIfPresent(final String bz_key, final IRecord lines) {
+            final IRecord reg = this.bz_registry();
+            if (reg.size() < 0) {
+                this.put(this.bz_registry_key, REC());
+            }
+
+            final IRecord gen_url = this.generate_url(bz_key); // 生成URL
+            final String gen_put_url = gen_url.str("gen_put_url");
+            final String gen_get_url = gen_url.str("gen_get_url");
+            final String gen_key = gen_url.str("gen_key");
+            final String reg_get_url = reg.str(bz_key);
+            if (reg_get_url == null) { // 值不存在
+                return REC(); // do nothing
+            } else { // 注册表的读取url
+                this.put(bz_registry_key, reg.add(bz_key, gen_get_url)); // 更新注册key
+                // this.put(gen_key, lines);
+                send2(gen_put_url, REC("key", gen_key, "lines", lines.json())); // 写入 与 this.put(gen_key, lines) 等价
+                return send2(gen_get_url, lines); // 直接读
+            }
+        }
+
+        /**
+         * 生成 URL
+         * 
+         * @param bz_key 业务key
+         * @return {bz_key,gen_key,gen_put_url,gen_get_key}
+         */
+        public IRecord generate_url(final String bz_key) {
+            final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSS"));
+            final String gen_key = IRecord.FT("$0$1$2.json", "E:/slicee/temp/snowwhite/kvps/devops/proj/", bz_key,
+                    timestamp);
+            final String gen_put_url = IRecord.FT("$0$1", host, "/snowwhite/media/file/write");
+            final String gen_get_url = IRecord.FT("$0$1$2", host, "/snowwhite/media/file/download?key=", gen_key);
+
+            return IRecord.REC("bz_key", bz_key, "gen_key", gen_key, "gen_put_url", gen_put_url, "gen_get_url",
+                    gen_get_url);
         }
     }
 
@@ -474,6 +560,22 @@ public class DevOpsJunit {
         final DoubleSummaryStatistics stats_software = proj001.pathllS("budget/software").map(IRecord::REC)
                 .map(e -> e.dbl("amount")).collect(Collectors.summarizingDouble(e -> e));
         println(stats_software);
+    }
+
+    /**
+     * 业务场景的模拟
+     */
+    @Test
+    public void qux3() {
+        final KVPS kvps = new KVPS();
+        // println(kvps.registry());
+        final String bz_key = "proj001";
+        println(kvps.generate_url(bz_key));
+        // 读取&初始写：不存在则创建，存在则读取，乐观锁模式，也就是 假设数据是存在的，不存在则写入
+        println(kvps.computeIfAbsent(bz_key, REC("name", bz_key + "_init", "create_time", LocalDateTime.now())));
+        // 更新：不存在,do nothing,存在则 更新。
+        println(kvps.computeIfPresent(bz_key,
+                REC("name", bz_key + "_" + LocalDateTime.now(), "create_time", LocalDateTime.now())));
     }
 
     static {
