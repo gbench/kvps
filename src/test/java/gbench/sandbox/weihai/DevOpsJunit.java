@@ -402,6 +402,8 @@ public class DevOpsJunit {
         /**
          * 业务key 的计算 <br>
          * 不存在则创建，存在则读取，乐观锁模式，也就是 假设数据是存在的，不存在则写入 <br>
+         * C++语法: <br>
+         * bz_key==NULL?**bz_key=lines:NULL <br>
          * 
          * @param bz_key 业务key
          * @param lines  业务值，默认值
@@ -429,7 +431,9 @@ public class DevOpsJunit {
         }
 
         /**
-         * 业务key 的计算
+         * 业务key 的计算 <br>
+         * C++等价语法: <br>
+         * bz_key!=NULL?**bz_key=lines:NULL <br>
          * 
          * @param bz_key 业务key
          * @param lines  业务值，更新值
