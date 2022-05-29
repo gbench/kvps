@@ -58,5 +58,5 @@ switch(msgname){
 获取新版本的办法，其实是极大的简化了，系统并行 所 带来的 状态冲突。（并发编程的同步问题，大家可以借鉴一下里面的复杂性）。所以，此处的间接
 传递数据，其实 并不是 低效，相反还很高效。同时，由于 两个系统（ITSM，DEVOPS）交互场景不多，这种间接带来的损耗就微乎其微多了，这也是 为何 
 KVPS 我们也可采用文件系统来进行实现。
-以上 就是 就我推荐 KVPS 的 理由。
-7）![KVPS 存储结构](https://github.com/gbench/kvps/raw/main/imgs/kvps%20structure%20dump.jpg)
+以上 就是 就我 推荐 KVPS 的 理由。
+7）![KVPS 存储结构](/imgs/kvps%20structure%20dump.jpg?raw=true)
