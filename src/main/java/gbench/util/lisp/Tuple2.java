@@ -276,19 +276,6 @@ public class Tuple2<T, U> {
     }
 
     /**
-     * 序列号生成器 <br>
-     * Serial Number Builder
-     * 
-     * @param <T>   元素
-     * @param start 开始号码
-     * @return t->(int,t) 的标记函数
-     */
-    public static <T> Function<T, Tuple2<Integer, T>> snbuilder(final int start) {
-        final AtomicInteger sn = new AtomicInteger(start);
-        return t -> TUP2(sn.getAndIncrement(), t);
-    }
-
-    /**
      * snbuilder 的简写 <br>
      * 键名，键值 生成器 <br>
      * 开始号码为为0
@@ -299,6 +286,19 @@ public class Tuple2<T, U> {
      */
     public static <T> Function<T, Tuple2<Integer, T>> snb(final Integer start) {
         return snbuilder(start);
+    }
+
+    /**
+     * 序列号生成器 <br>
+     * Serial Number Builder
+     * 
+     * @param <T>   元素
+     * @param start 开始号码
+     * @return t->(int,t) 的标记函数
+     */
+    public static <T> Function<T, Tuple2<Integer, T>> snbuilder(final int start) {
+        final AtomicInteger sn = new AtomicInteger(start);
+        return t -> TUP2(sn.getAndIncrement(), t);
     }
 
     /**
