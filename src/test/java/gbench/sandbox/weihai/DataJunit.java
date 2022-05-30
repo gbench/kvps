@@ -8,6 +8,7 @@ import java.sql.Driver;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.sql.DataSource;
 import org.springframework.jdbc.datasource.*;
@@ -51,7 +52,6 @@ public class DataJunit {
                 "org.h2.Driver", "user", "sa", "password", "");
         final DataSource ds = ds(rec);
         final DataApp dataMain = new DataApp(ds);
-        final boolean b = dataMain.tblExists("t_registry");
         final IRecord java2sql = REC( //
                 "Integer", "INT" //
                 , "Double", "DOUBLE" //
@@ -75,7 +75,12 @@ public class DataJunit {
             }
             println(sess.sql2x("select * from t_registry where sex=false"));
         });
-        println(b);
+
+        //
+        Stream.of("t_registry", "T_REGISTRY").forEach(e -> {
+            println(e, dataMain.tblExists(e));
+        });
+        
     }
 
 }
