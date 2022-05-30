@@ -12,6 +12,9 @@ public class ExcelJunit {
     @Test
     public void foo() {
         final SimpleExcel excel = SimpleExcel.of("C:\\Users\\xuqinghua\\Desktop\\项目配置.xlsx");
+        excel.sheets().forEach(e->{
+            println(excel.autoDetect(e));
+        });
         final StrMatrix mm = excel.autoDetect(0);
         println(mm.header());
         println(mm.rows().get(0));

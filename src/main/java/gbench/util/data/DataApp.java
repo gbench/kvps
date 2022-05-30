@@ -307,6 +307,17 @@ public class DataApp {
             return Optional.ofNullable(IRecord.obj2dbl(null).apply(obj)).map(Number::intValue).orElse(null);
         }
 
+        /*
+         * 值变换
+         * 
+         * @param mapper this->t
+         * 
+         * @return t
+         */
+        default <T> T mutate(final Function<? super Map<String, Object>, T> mapper) {
+            return mapper.apply(this.toMap());
+        }
+
         /**
          * 生成 构建器
          * 
