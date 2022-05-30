@@ -664,6 +664,27 @@ public class DataApp {
         }
 
         /**
+         * 
+         * @param sql sql 语句
+         * @return IRecord 的 数据流
+         * @throws SQLException
+         */
+        default Stream<IRecord> sql2updateS(final String sql) throws SQLException {
+            return this.psql2updateS(sql, null);
+        }
+
+        /**
+         * sql2updateS 的列表形式
+         * 
+         * @param sql sql 语句
+         * @return IRecord 的 数据列表
+         * @throws SQLException
+         */
+        default List<IRecord> sql2execute(final String sql) throws SQLException {
+            return this.sql2updateS(sql).collect(Collectors.toList());
+        }
+
+        /**
          * 查询结果集合
          *
          * @param sql    prepared sql 语句
@@ -677,6 +698,19 @@ public class DataApp {
                     false);
             this.add(stream);
             return stream;
+        }
+
+        /**
+         * 更新数据:execute 与update 同属于与 update
+         *
+         * @param sql    prepared sql 语句
+         * @param params 占位符的对应值的Map,位置从1开始
+         * @return 更新结果集合函数有 generatedKeys 键值
+         * @throws SQLException
+         */
+        default Stream<IRecord> psql2updateS(String sql, Map<Integer, Object> params) throws SQLException {
+
+            return IJdbcSession.psql2recordS(this.getConnection(), sql, params, SQL_MODE.UPDATE, false);
         }
 
         /**
