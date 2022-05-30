@@ -329,6 +329,17 @@ public class DataMatrix<T> {
     }
 
     /**
+     * 增加数据预处理函数，只改变数据内容并改变数据形状shape:比如 无效非法值，缺失值，数字格式化等功能。
+     * 
+     * @param handler 行数据映射 LinkedHashMap<String,T>的结构, key->value
+     */
+    public DataMatrix<T> preProcess(final Consumer<T[]> handler) {
+        for (int i = 0; i < this.height(); i++)
+            handler.accept(cells[i]);
+        return this;
+    }
+
+    /**
      * 矩阵转置
      * 
      * @param <U>   元素类型
@@ -389,17 +400,6 @@ public class DataMatrix<T> {
      */
     public static Stream<Integer> st(int n) {
         return st().limit(n);
-    }
-
-    /**
-     * 增加数据预处理函数，只改变数据内容并改变数据形状shape:比如 无效非法值，缺失值，数字格式化等功能。
-     * 
-     * @param handler 行数据映射 LinkedHashMap<String,T>的结构, key->value
-     */
-    public DataMatrix<T> preProcess(final Consumer<T[]> handler) {
-        for (int i = 0; i < this.height(); i++)
-            handler.accept(cells[i]);
-        return this;
     }
 
     /**

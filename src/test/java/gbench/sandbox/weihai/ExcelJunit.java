@@ -17,6 +17,7 @@ public class ExcelJunit {
         println(mm.rows().get(0));
         println(mm);
         println(mm.transpose());
+        excel.close();
     }
 
 }
