@@ -1,4 +1,4 @@
-# KVPS (Key Value Pairs)kvps/data
+# KVPS (Key Value Pairs)
 键值对儿数据库
 
 1) 启动 KVSAPPlication：/kvps/src/main/java/gbench/whccb/kvps/apl/KVPSApplication.java
@@ -9,10 +9,10 @@
 特别是我只需30min就可以给出一个实现）。我是希望最终可以通过网盘来实现KVPS的 ，如果 在系统上线 时候，网盘不可用，建议 暂用 REDIS 来进行代替。
 本质就是 采用一个 二级指针 **PTR  来进行资源访问。
 演示代码里的资源存放路径是：E:/slicee/temp/kvps/data/devops/proj/，这是一个层级结构，也就是KEY本身的编码方式也是具有意义的，这是文件系统的天然好处。
-2) REST API CONTROLLER (KVS API IMPLEMENATION): /kvps/src/main/java/gbench/whccb/kvps/controller/MediaController.java
+2) REST API CONTROLLER (KVS API IMPLEMENATION): /kvps/src/main/java/gbench/whccb/kvps/controller/MediaController.java  
 3) APIS:  
   3.1) LIST 资源列表 http://localhost:8089/kvps/media/file/list?key=E:/slicee/temp/kvps/  
-  3.2) WITE 资源 PUT: http://localhost:8089/kvps/media/file/write?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json&lines=...
+  3.2) WITE 资源 PUT: http://localhost:8089/kvps/media/file/write?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json&lines=...  
   3.3) READ 资源 GET : http://localhost:8089/kvps/media/file/download?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json    
 
 这里为了演示需要，强调了文件的特征，KEY采用了文件的全路径，在实际引用场景里KEY应该是一个UUID的字符串，层级属性（实际的物理存储的信息）只有在URL中才能够体现出来：
