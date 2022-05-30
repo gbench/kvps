@@ -675,6 +675,7 @@ public class DataApp {
         }
 
         /**
+         * sql2updateS
          * 
          * @param sql sql 语句
          * @return IRecord 的 数据流
@@ -682,6 +683,17 @@ public class DataApp {
          */
         default Stream<IRecord> sql2updateS(final String sql) throws SQLException {
             return this.psql2updateS(sql, null);
+        }
+
+        /**
+         * sql2updateS 的别名
+         * 
+         * @param sql sql 语句
+         * @return IRecord 的 数据列表
+         * @throws SQLException
+         */
+        default Stream<IRecord> sql2executeS(final String sql) throws SQLException {
+            return this.sql2updateS(sql);
         }
 
         /**

@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.springframework.stereotype.Component;
 
 import gbench.util.data.DataApp;
+import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
 import gbench.util.lisp.Tuple2;
 
@@ -43,7 +44,7 @@ public class DBModel {
             for (int i = 0; i < 10; i++) {
                 final String t = "insert into T_PROJ(name) values ('$0')";
                 final String insert_sql_proj = FT(t, "PROJ00" + i);
-                sess.sql2execute(insert_sql_proj);
+                sess.sql2executeS(insert_sql_proj).collect(DFrame.dfmclc(IRecord::REC));
             }
 
             final String[] roles = "项目经理,技术经理,开发,测试".split("[,]+");
