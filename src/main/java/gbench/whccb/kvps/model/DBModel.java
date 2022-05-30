@@ -55,7 +55,7 @@ public class DBModel {
      * @param proj_key 项目主键
      * @return 人员名单,[{id,name}]
      */
-    public List<Map<String, Object>> teamgroup(final String proj_key) {
+    public List<Map<String, Object>> teamGroup(final String proj_key) {
         return this.dataMain.sql2dframe("select * from T_USER") //
                 .rowS().map(e -> e.toMap()).collect(Collectors.toList());
     }

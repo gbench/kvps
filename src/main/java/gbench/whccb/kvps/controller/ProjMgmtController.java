@@ -16,14 +16,14 @@ public class ProjMgmtController {
     /**
      * 获取项目团队成员信息
      * 
-     * http://localhost:8089/kvps/pm/teamgroup
+     * http://localhost:8089/kvps/pm/teamGroup
      * 
      * @return 项目团队
      */
-    @RequestMapping("teamgroup")
-    public Map<String, Object> teamgroup(final String proj_key) {
+    @RequestMapping("teamGroup")
+    public Map<String, Object> teamGroup(final String proj_key) {
         final IRecord rec = IRecord.REC("code", 0);
-        rec.add("users", dbModel.teamgroup(proj_key));
+        rec.add("users", dbModel.teamGroup(proj_key));
         return rec.toMap2();
     }
 
