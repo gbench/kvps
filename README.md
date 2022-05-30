@@ -16,7 +16,7 @@
   3.3) READ 资源 GET : http://localhost:8089/kvps/media/file/download?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json    
 
 这里为了演示需要，强调了文件的特征，KEY采用了文件的全路径，在实际引用场景里KEY应该是一个UUID的字符串，层级属性（实际的物理存储的信息）只有在URL中才能够体现出来：
-比如：http://localhost:8090/kvps/media/file/write?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json
+比如：http://localhost:8090/kvps/media/file/write?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json  
 4) ITSM 与 DEVOPS 理论上 只需要一个接口，类似于：SEND({msgname,keys:[key1,key2,....]}).
 我们可以通过 msgname 来判断事件的类型(即是什么事而)，各个keys的数据意义（类似于前端编程里按钮的click(event)事件的event.target），然后通过 KVPS 进行具体的
 实体数据 （master data) 的获取。进而 实现 相应的业务。我们的程序可以采用，一下的逻辑对事件进行处理：  
