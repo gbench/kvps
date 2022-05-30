@@ -318,8 +318,8 @@ public class DevOpsJunit {
 
     @Test
     public void foo() {
-        final String url = "http://localhost:8089/snowwhite/media/file/list?_=1";
-        final String body = send(url, REC("$method", "post", "key", "E:/slicee/temp/snowwhite/ufms"));
+        final String url = "http://localhost:8089/kvps/media/file/list?_=1";
+        final String body = send(url, REC("$method", "post", "key", "E:/slicee/temp/kvps/ufms"));
         println(body);
         println(json2rec(body));
     }
@@ -329,7 +329,7 @@ public class DevOpsJunit {
      */
     @Test
     public void auth_oauth_token() {
-        String host = "http://localhost:8089/snowwhite";
+        String host = "http://localhost:8089/kvps";
         host = "http://10.24.24.53:8182";
         final String api = IRecord.FT("$0$1", host, "/auth/oauth/token");
         println(api);
@@ -350,7 +350,7 @@ public class DevOpsJunit {
      */
     public static class KVPS {
         final String host = "http://localhost:8089";
-        final String bz_registry_key = "E:/slicee/temp/snowwhite/kvps/registry.json";
+        final String bz_registry_key = "E:/slicee/temp/kvps/data/registry.json";
 
         /**
          * 写入
@@ -360,7 +360,7 @@ public class DevOpsJunit {
          * @return IRecord
          */
         public IRecord list(final String key) {
-            final String api = IRecord.FT("$0$1", host, "/snowwhite/media/file/list");
+            final String api = IRecord.FT("$0$1", host, "/kvps/media/file/list");
             final IRecord response = send2(api, REC("key", key));
             return response;
         }
@@ -373,7 +373,7 @@ public class DevOpsJunit {
          * @return IRecord
          */
         public IRecord put(final String key, final IRecord data) {
-            final String api = IRecord.FT("$0$1", host, "/snowwhite/media/file/write");
+            final String api = IRecord.FT("$0$1", host, "/kvps/media/file/write");
             final IRecord response = send2(api, REC("key", key, "lines", data.json()));
             return response;
         }
@@ -385,7 +385,7 @@ public class DevOpsJunit {
          * @return 键数据
          */
         public IRecord get(final String key) {
-            final String url2 = IRecord.FT("$0$1$2", host, "/snowwhite/media/file/download?key=", key);
+            final String url2 = IRecord.FT("$0$1$2", host, "/kvps/media/file/download?key=", key);
             final IRecord response = send2(url2, REC());
             return response;
         }
@@ -468,10 +468,10 @@ public class DevOpsJunit {
          */
         public IRecord generate_url(final String bz_key) {
             final String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSS"));
-            final String gen_key = IRecord.FT("$0$1$2.json", "E:/slicee/temp/snowwhite/kvps/devops/proj/", bz_key,
+            final String gen_key = IRecord.FT("$0$1$2.json", "E:/slicee/temp/kvps/data/devops/proj/", bz_key,
                     timestamp);
-            final String gen_put_url = IRecord.FT("$0$1", host, "/snowwhite/media/file/write");
-            final String gen_get_url = IRecord.FT("$0$1$2", host, "/snowwhite/media/file/download?key=", gen_key);
+            final String gen_put_url = IRecord.FT("$0$1", host, "/kvps/media/file/write");
+            final String gen_get_url = IRecord.FT("$0$1$2", host, "/kvps/media/file/download?key=", gen_key);
 
             return IRecord.REC("bz_key", bz_key, "gen_key", gen_key, "gen_put_url", gen_put_url, "gen_get_url",
                     gen_get_url);
@@ -484,8 +484,8 @@ public class DevOpsJunit {
     @Test
     public void qux() {
         String host = "http://localhost:8089";
-        final String api = IRecord.FT("$0$1", host, "/snowwhite/media/file/write");
-        final String kvps_home = "E:/slicee/temp/snowwhite/kvps/devops/";
+        final String api = IRecord.FT("$0$1", host, "/kvps/media/file/write");
+        final String kvps_home = "E:/slicee/temp/kvps/data/devops/";
         final String key = IRecord.FT("$0$1", kvps_home, "project.json");
         final IRecord data = send2(api, REC( //
                 "key", key, // 文件key
@@ -504,8 +504,8 @@ public class DevOpsJunit {
     @Test
     public void qux2() throws Exception {
         final KVPS kvps = new KVPS();
-        final String kvp_home = "E:/slicee/temp/snowwhite/kvps/devops/proj/";
-        final String key = IRecord.FT("$0$1", kvp_home, "proj002.json");
+        final String kvp_home = "E:/slicee/temp/kvps/data/devops/proj/";
+        final String key = IRecord.FT("$0$1", kvp_home, "proj001.json");
         final IRecord proj_inst = REC("name", "proj001", "teamgroup", asList( //
                 REC("name", "张三", "role", "项目经理", "mobile", "123") //
                 , REC("name", "李四", "role", "技术组长", "mobile", "123") //
@@ -519,8 +519,8 @@ public class DevOpsJunit {
                                 , REC("name", "数据库", "amount", 40)) //
                 ), // budget
                 "reqs",
-                asList(REC("key", "req001", "file-key", "E:/slicee/temp/snowwhite/reqs/req001.docx", "version", "1.0"), //
-                        REC("key", "req002", "file-key", "E:/slicee/temp/snowwhite/reqs/req002.docx", "version", "1.1") //
+                asList(REC("key", "req001", "file-key", "E:/slicee/temp/kvps/reqs/req001.docx", "version", "1.0"), //
+                        REC("key", "req002", "file-key", "E:/slicee/temp/kvps/reqs/req002.docx", "version", "1.1") //
                 ), //
                 "reqdecs",
                 asList(REC("req-key", "req001", "reqents", asList(REC("reqent-key", "reqent001", "name", "项目地图"),

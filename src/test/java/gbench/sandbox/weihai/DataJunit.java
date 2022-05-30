@@ -68,16 +68,16 @@ public class DataJunit {
 
         // 数据使用演示
         dataMain.withTransaction(sess -> {
-            sess.sql2execute(table_of.apply("t_registry", REC("id", 1, "name", "zhangsan", "sex", true)));
+            sess.sql2execute(table_of.apply("t_user", REC("id", 1, "name", "zhangsan", "sex", true)));
             for (int i = 0; i < 100; i++) {
-                final String sql = FT("insert into t_registry values ($0,'$1',$2) ", i, "zhang" + i, i % 2 == 0);
+                final String sql = FT("insert into t_user values ($0,'$1',$2) ", i, "zhang" + i, i % 2 == 0);
                 sess.sql2execute(sql);
             }
-            println(sess.sql2x("select * from t_registry where sex=false"));
+            println(sess.sql2x("select * from t_user where sex=false"));
         });
 
         //
-        Stream.of("t_registry", "T_REGISTRY").forEach(e -> {
+        Stream.of("t_user", "T_USER").forEach(e -> {
             println(e, dataMain.tblExists(e));
         });
         

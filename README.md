@@ -1,4 +1,4 @@
-# KVPS (Key Value Pairs)
+# KVPS (Key Value Pairs)kvps/data
 键值对儿数据库
 
 1) 启动 KVSAPPlication：/kvps/src/main/java/gbench/whccb/kvps/apl/KVPSApplication.java
@@ -8,15 +8,15 @@
 1) KVPS 的实现可以采用多种方式：REDIS，文件系统，关系数据库的日志表 等。这是 提供了一个 演示版的 文件系统的实现（为何要用文件系统呢？只因它足够的简单，
 特别是我只需30min就可以给出一个实现）。我是希望最终可以通过网盘来实现KVPS的 ，如果 在系统上线 时候，网盘不可用，建议 暂用 REDIS 来进行代替。
 本质就是 采用一个 二级指针 **PTR  来进行资源访问。
-演示代码里的资源存放路径是：E:/slicee/temp/snowwhite/kvps/devops/proj/，这是一个层级结构，也就是KEY本身的编码方式也是具有意义的，这是文件系统的天然好处。
+演示代码里的资源存放路径是：E:/slicee/temp/kvps/data/devops/proj/，这是一个层级结构，也就是KEY本身的编码方式也是具有意义的，这是文件系统的天然好处。
 2) REST API CONTROLLER (KVS API IMPLEMENATION): /kvps/src/main/java/gbench/whccb/kvps/controller/MediaController.java
 3) APIS:  
-  3.1) LIST 资源列表 http://localhost:8090/snowwhite/media/file/list?key=E:/slicee/temp/snowwhite/  
-  3.2) WITE 资源 PUT: http://localhost:8090/snowwhite/media/file/write?key=E:/slicee/temp/snowwhite/kvps/devops/proj/proj001.json  
-  3.3) READ 资源 GET : http://localhost:8090/snowwhite/media/file/download?key=E:/slicee/temp/snowwhite/kvps/devops/proj/proj001.json    
+  3.1) LIST 资源列表 http://localhost:8089/kvps/media/file/list?key=E:/slicee/temp/kvps/  
+  3.2) WITE 资源 PUT: http://localhost:8089/kvps/media/file/write?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json&lines=...
+  3.3) READ 资源 GET : http://localhost:8089/kvps/media/file/download?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json    
 
 这里为了演示需要，强调了文件的特征，KEY采用了文件的全路径，在实际引用场景里KEY应该是一个UUID的字符串，层级属性（实际的物理存储的信息）只有在URL中才能够体现出来：
-比如：http://localhost:8090/snowwhite/media/file/write?key=E:/slicee/temp/snowwhite/kvps/devops/proj/proj001.json
+比如：http://localhost:8090/kvps/media/file/write?key=E:/slicee/temp/kvps/data/devops/proj/proj001.json
 4) ITSM 与 DEVOPS 理论上 只需要一个接口，类似于：SEND({msgname,keys:[key1,key2,....]}).
 我们可以通过 msgname 来判断事件的类型(即是什么事而)，各个keys的数据意义（类似于前端编程里按钮的click(event)事件的event.target），然后通过 KVPS 进行具体的
 实体数据 （master data) 的获取。进而 实现 相应的业务。我们的程序可以采用，一下的逻辑对事件进行处理：  

@@ -114,6 +114,7 @@ public class MyRecord implements IRecord, Serializable {
             rec = IRecord.REC(objM.readValue(json, Map.class));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
+            System.err.println("error json:\n"+json);
         }
         return rec;
     }
