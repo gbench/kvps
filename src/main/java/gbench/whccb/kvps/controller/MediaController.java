@@ -183,7 +183,7 @@ public class MediaController {
      * @param lines 文件正文
      * @return 文件对象
      */
-    public static File writeKey(final String key, final String lines) {
+    public static synchronized File writeKey(final String key, final String lines) {
 
         final File myfile = FileSystem.fileOf(key, MediaController.class.getClass());
         FileSystem.utf8write(key, () -> lines);
