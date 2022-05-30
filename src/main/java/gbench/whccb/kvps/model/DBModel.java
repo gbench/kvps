@@ -37,14 +37,32 @@ public class DBModel {
     public void initalize() {
         dataMain.withTransaction(sess -> {
             // 创建用户表
-            final IRecord user_proto = REC("id", 1, "name", "zhangsan", "sex", true);
-            final String create_table_user = table_of.apply("T_USER", user_proto);
-            sess.sql2execute(create_table_user); // 创建用户表
-            for (int i = 0; i < 100; i++) {
-                final String t = "insert into T_USER(name,sex) values ('$0',$1)";
-                final String insert_sql_user = FT(t, "zhang" + i, i % 2 == 0);
-                sess.sql2execute(insert_sql_user);
-            } // for
+            final IRecord proj_proto = REC("id", 1, "name", "项目1");
+            final String create_table_proj = table_of.apply("T_PROJ", proj_proto);
+            sess.sql2execute(create_table_proj); // 创建用户表
+            for (int i = 0; i < 10; i++) {
+                final String t = "insert into T_PROJ(name) values ('$0')";
+                final String insert_sql_proj = FT(t, "PROJ00" + i);
+                sess.sql2execute(insert_sql_proj);
+            }
+
+            final String[] roles = "项目经理,技术经理,开发,测试".split("[,]+");
+            for (final DataApp.IRecord r : sess.sql2x("select * from T_PROJ")) {
+                if (!sess.isTablePresent("T_USER")) {
+                    // 创建用户表
+                    final IRecord user_proto = REC("id", 1, "name", "zhangsan", "sex", true, "role", "项目经理", "proj_id",
+                            r.str("ID"));
+                    final String create_table_user = table_of.apply("T_USER", user_proto);
+                    sess.sql2execute(create_table_user); // 创建用户表
+                }
+                for (int i = 0; i < 100; i++) {
+                    final String t = "insert into T_USER(name,sex,role,proj_id) values ('$0',$1,'$2',$3)";
+                    final String insert_sql_user = FT(t, r.str("NAME") + "-zhang" + i, i % 2 == 0,
+                            roles[i % roles.length], r.str("ID"));
+                    sess.sql2execute(insert_sql_user);
+                } // for
+            }
+
             println(sess.sql2x("select * from T_USER"));
         }); // withTransaction
     }
