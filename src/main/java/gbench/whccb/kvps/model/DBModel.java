@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import gbench.util.data.DataApp;
 import gbench.util.lisp.IRecord;
+import gbench.util.lisp.Tuple2;
 
 @Component
 public class DBModel {
@@ -40,11 +41,11 @@ public class DBModel {
             final String create_table_user = table_of.apply("T_USER", user_proto);
             sess.sql2execute(create_table_user); // 创建用户表
             for (int i = 0; i < 100; i++) {
-                final String t = "insert into T_USER values ($0,'$1',$2)";
-                final String insert_sql_user = FT(t, i, "zhang" + i, i % 2 == 0);
+                final String t = "insert into T_USER(name,sex) values ('$0',$1)";
+                final String insert_sql_user = FT(t, "zhang" + i, i % 2 == 0);
                 sess.sql2execute(insert_sql_user);
-                println(sess.sql2x("select * from T_USER"));
             } // for
+            println(sess.sql2x("select * from T_USER"));
         }); // withTransaction
     }
 
@@ -60,7 +61,8 @@ public class DBModel {
     }
 
     final static IRecord java2sql = REC( //
-            "Integer", "INT" //
+            "*Integer", "INT PRIMARY KEY AUTO_INCREMENT" //
+            , "Integer", "INT" //
             , "Double", "DOUBLE" //
             , "String", "VARCHAR(512)" //
             , "Boolean", "BOOLEAN" //
@@ -68,8 +70,8 @@ public class DBModel {
             , "LocalDate", "TIMESTAMP" //
             , "LocalTIME", "TIMESTAMP" //
     ); // java 的类型转 sql的类型
-    final static Function<IRecord, IRecord> flds_of = p -> p.tupleS()
-            .map(e -> e.map2(o -> o.getClass().getSimpleName()))
+    final static Function<IRecord, IRecord> flds_of = rec -> rec.tupleS().map(Tuple2.snb(0))
+            .map(tup -> tup._2.map2(o -> (tup._1 == 0 ? "*" : "") + o.getClass().getSimpleName())) // 主键类型的判断
             .collect(IRecord.recclc(e -> e.map2(s -> java2sql.strOpt(s).orElse("VARCHAR(512)")))); // 提取字段类型信息
     final static BiFunction<String, IRecord, String> table_of = (name, defs) -> FT("create table $0($1)", name,
             flds_of.apply(defs).tupleS().map(e -> e._1 + " " + e._2).collect(Collectors.joining(","))); // 创建sql

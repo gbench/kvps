@@ -289,6 +289,19 @@ public class Tuple2<T, U> {
     }
 
     /**
+     * snbuilder 的简写 <br>
+     * 键名，键值 生成器 <br>
+     * 开始号码为为0
+     * 
+     * @param <T>   元素
+     * @param start 开始号码
+     * @return t->(int,t) 的标记函数
+     */
+    public static <T> Function<T, Tuple2<Integer, T>> snb(final Integer start) {
+        return snbuilder(start);
+    }
+
+    /**
      * 键名，键值 生成器 <br>
      * 开始号码为为0
      * 

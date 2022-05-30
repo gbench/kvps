@@ -150,6 +150,19 @@ public interface IRecord extends Comparable<IRecord> {
     }
 
     /**
+     * 设置键，若 idx 与 老的 键 相同则 覆盖 老的值
+     * 
+     * @param idx   键名索引，从0开始
+     * @param value 数值
+     * @return this 对象本身
+     */
+    default IRecord set(final Integer idx, final Object value) {
+        final String key = this.keyOf(idx);
+        this.add(key, value);
+        return this;
+    }
+
+    /**
      * 构造 IRecord <br>
      * 按照构建器的 键名序列表，依次把objs中的元素与其适配以生成 IRecord <br>
      * {key0:objs[0],key1:objs[1],key2:objs[2],...}
@@ -1257,7 +1270,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 不存在则计算
      * 
-     * @param <T>
+     * @param <T>    值类型
      * @param key    健名
      * @param mapper 健名映射 k->t
      * @return T 类型的结果
@@ -1269,6 +1282,46 @@ public interface IRecord extends Comparable<IRecord> {
             this.add(key, value);
             return value;
         });
+    }
+
+    /**
+     * 不存在则计算
+     * 
+     * @param <T>    值类型
+     * @param @param idx 键名索引，从0开始
+     * @param mapper 健名映射 k->t
+     * @return T 类型的结果
+     */
+    default <T> T computeIfAbsent(final Integer idx, final Function<String, T> mapper) {
+        return this.computeIfAbsent(this.keyOf(idx), mapper);
+    }
+
+    /**
+     * 不存在则计算
+     * 
+     * @param <T>
+     * @param key    健名
+     * @param mapper 健名映射 k->t
+     * @return T 类型的结果
+     */
+    default <T> T computeIfPresent(final String key, final Function<String, T> mapper) {
+        return this.opt(key).map(v -> {
+            final T t = mapper.apply(key);
+            this.add(key, t);
+            return t;
+        }).orElse(null);
+    }
+
+    /**
+     * 不存在则计算
+     * 
+     * @param <T>
+     * @param @param idx 键名索引，从0开始
+     * @param mapper 健名映射 k->t
+     * @return T 类型的结果
+     */
+    default <T> T computeIfPresent(final Integer idx, final Function<String, T> mapper) {
+        return this.computeIfPresent(this.keyOf(idx), mapper);
     }
 
     /**
