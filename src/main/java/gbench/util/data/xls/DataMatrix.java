@@ -129,9 +129,17 @@ public class DataMatrix<T> {
      * 
      * @return 返回 数据 的表头，列名序列
      */
+    public Stream<String> keyS() {
+        return this.keymetas.entrySet().stream().sorted(Comparator.comparingInt(Entry::getValue)).map(Entry::getKey);
+    }
+
+    /**
+     * 表头，列名字段序列:
+     * 
+     * @return 返回 数据 的表头，列名序列
+     */
     public List<String> keys() {
-        return this.keymetas.entrySet().stream().sorted(Comparator.comparingInt(Entry::getValue))
-                .map(Entry::getKey).collect(Collectors.toList());
+        return this.keyS().collect(Collectors.toList());
     }
 
     /**
@@ -195,6 +203,36 @@ public class DataMatrix<T> {
                 mm.put(hh[i % hn], row.get(i));
             return final_mapper.apply(mm);
         });// lrows
+    }
+
+    /**
+     * 按照行进行映射
+     * 
+     * @param <U>    结果
+     * @param mapper 列变换函数 (k,tt)->u
+     * @return U 类型的流
+     */
+    public <U> Stream<U> colS(final Function<Tuple2<String, T[]>, U> mapper) {
+        final T[][] tt = DataMatrix.transpose(this.data());
+        return this.keyS().map(Tuple2.snb(0)).map(e -> Tuple2.of(e._2, tt[e._1])).map(mapper);
+    }
+
+    /**
+     * 按照行进行映射
+     * 
+     * @return U 类型的流
+     */
+    public Stream<Tuple2<String, T[]>> colS() {
+        return this.colS(e -> e);
+    }
+
+    /**
+     * 按照行进行映射
+     * 
+     * @return U 类型的流
+     */
+    public List<Tuple2<String, T[]>> cols() {
+        return this.colS().collect(Collectors.toList());
     }
 
     /**
