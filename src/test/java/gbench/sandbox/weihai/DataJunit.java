@@ -48,7 +48,7 @@ public class DataJunit {
 
     @Test
     public void foo() {
-        final IRecord rec = IRecord.REC("url", "jdbc:h2:mem:activitidb;MODE=MYSQL;DB_CLOSE_DELAY=-1", "driver",
+        final IRecord rec = IRecord.REC("url", "jdbc:h2:mem:kvps;MODE=MYSQL;DB_CLOSE_DELAY=-1", "driver",
                 "org.h2.Driver", "user", "sa", "password", "");
         final DataSource ds = ds(rec);
         final DataApp dataMain = new DataApp(ds);

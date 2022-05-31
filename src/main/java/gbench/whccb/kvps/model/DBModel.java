@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 import org.springframework.stereotype.Component;
 
 import gbench.util.data.DataApp;
+import gbench.util.data.xls.SimpleExcel;
 import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
 import gbench.util.lisp.Tuple2;
@@ -66,6 +67,9 @@ public class DBModel {
 
             println(sess.sql2x("select * from T_USER"));
         }); // withTransaction
+
+        // 加载devops数据
+        this.loadXls("E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx");
     }
 
     /**
@@ -77,6 +81,40 @@ public class DBModel {
     public List<Map<String, Object>> teamGroup(final String proj_key) {
         return this.dataMain.sql2dframe("select * from T_USER") //
                 .rowS().map(e -> e.toMap()).collect(Collectors.toList());
+    }
+
+    /**
+     * 
+     * @param path
+     */
+    public void loadXls(final String path) {
+        final SimpleExcel excel = SimpleExcel.of(path);
+        excel.sheetS().forEach(sht -> {
+            final DFrame dfm = excel.autoDetect(sht).mapByRow(IRecord::REC).collect(DFrame.dfmclc);
+            final String tblname = sht.getSheetName();
+            final IRecord proto = dfm.row(0);
+            final String create_table_sql = table_of.apply(tblname, proto);
+            final BiFunction<String, IRecord, String> insert_into_of = (tbl, rec) -> {
+                final StringBuilder builder = new StringBuilder();
+                builder.append(IRecord.FT("insert into $0 ($1)", tblname,
+                        proto.keyS().map(e -> e).collect(Collectors.joining(","))));
+                builder.append(IRecord.FT(" values ( $0) ",
+                        proto.valueS().map(e -> "'" + e + "'").collect(Collectors.joining(","))));
+                return builder.toString();
+            };
+
+            dataMain.withTransaction(sess -> {
+                println(create_table_sql);
+                println(insert_into_of.apply(tblname, proto));
+                sess.sql2execute(create_table_sql);
+                for (IRecord r : dfm) {
+                    sess.sql2execute(insert_into_of.apply(tblname, r));
+                }
+                println(sess.sql2x(IRecord.FT("select * from $0", tblname)));
+            });
+
+        });
+        excel.close();
     }
 
     final static IRecord java2sql = REC( //

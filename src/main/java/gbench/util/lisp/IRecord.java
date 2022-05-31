@@ -110,6 +110,15 @@ public interface IRecord extends Comparable<IRecord> {
     Map<String, Object> toMap();
 
     /**
+     * 键名序列
+     * 
+     * @return 键名列表
+     */
+    default Stream<String> keyS() {
+        return this.keys().stream();
+    }
+
+    /**
      * 返回一个 Map 结构,递归遍历<br>
      * 非递归进行变换
      * 

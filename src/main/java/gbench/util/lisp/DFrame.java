@@ -2,6 +2,7 @@ package gbench.util.lisp;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +20,7 @@ import java.util.stream.Stream;
  * @author xuqinghua
  *
  */
-public class DFrame {
+public class DFrame implements Iterable<IRecord> {
 
     /**
      * 构造函数
@@ -209,6 +210,14 @@ public class DFrame {
      */
     public IRecord min(final BinaryOperator<IRecord> biop) {
         return this.minOpt(biop).orElse(null);
+    }
+
+    /**
+     * 
+     */
+    @Override
+    public Iterator<IRecord> iterator() {
+        return this.rows().iterator();
     }
 
     /**
