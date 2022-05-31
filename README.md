@@ -27,14 +27,16 @@ final var params = message.llS("keys").map(kvps::get).map(IRecord:REC).toArray(I
 switch(msgname){  
   case "reqdec":{ //  
     // 需求分析  
-    final var  proj = params[1]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。  
-    final var  reqdoc = params[2]; // 需求文档 的 json  
+    final var  proj = params[0]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。  
+    final var  reqdoc = params[1]; // 需求文档 的 json  
     handle_reqdec(proj,reqdoc); // 需求分解的具体逻辑  
     break;  
   }  
   case "uatents":{ //  
     // 验收申请  
-    handle_reqdec(params);  
+    final var  proj = params[0];  // 项目信息
+    final var  reqents = params[1]; // 需求条目
+    handle_uatents(proj，reqents);  
     break;  
   }  
   default:{

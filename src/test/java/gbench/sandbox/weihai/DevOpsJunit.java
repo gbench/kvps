@@ -592,9 +592,13 @@ public class DevOpsJunit {
     public void qux4() {
         String host = "http://localhost:8089";
         final String api = IRecord.FT("$0$1", host, "/kvps/pm/send");
-        final IRecord rec = send2(api,
+        final IRecord reqdec_response = send2(api,
                 REC("$entity_type", "json", "name", "reqdec", "keys", asList("key1,key2,key3".split("[,]+"))));
-        println(rec);
+        println(reqdec_response);
+
+        final IRecord uatents_response = send2(api,
+                REC("$entity_type", "json", "name", "uatents", "keys", asList("key1,key2,key3".split("[,]+"))));
+        println(uatents_response);
 
     }
 

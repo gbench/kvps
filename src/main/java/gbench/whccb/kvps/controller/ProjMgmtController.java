@@ -36,10 +36,40 @@ public class ProjMgmtController {
      * @param message 消息对象 {name,key1,key2,....}
      * @return 项目团队
      */
-    @RequestMapping(value = "send",consumes = "application/json")
+    @RequestMapping(value = "send", consumes = "application/json")
     public Map<String, Object> send(final @RequestBody String message) {
         final IRecord rec = IRecord.REC("code", 0);
-        rec.add("message", IRecord.REC(message));
+        final IRecord msg = IRecord.REC(message);
+        rec.add("message", msg);
+        final String name = msg.strOpt("name").orElse("-");
+        final Object[] params = msg.llS("keys").toArray();
+        switch (name) {
+        case "reqdec": { //
+            // 需求分析
+            final Object proj = params[0]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。
+            final Object reqdoc = params[1]; // 需求文档 的 json
+            rec.add("handler", IRecord.REC("event_handler", "handle_reqdec(proj,reqdoc)", "desc", "需求分解", "name",
+                    "reqdec", "proj", proj, "reqdoc", reqdoc));
+            // handle_reqdec(proj,reqdoc); // 需求分解的具体逻辑
+            break;
+        }
+        case "uatents": { //
+            // 验收申请
+            final Object proj = params[0]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。
+            final Object reqents = params[1]; // 需求条目
+            rec.add("handler", IRecord.REC("event_handler", "handle_uatents(proj,reqents)", "desc", "未知信息", "name", "",
+                    "proj", proj, "reqents", reqents));
+            // handle_uatents(params);
+            break;
+        }
+        default: {
+            rec.add("handler", IRecord.REC("event_handler", "handle_unknown(proj,reqents)", "desc", "未知消息", "name",
+                    "unknown", "params", params));
+            // I don't know
+            // so,
+            // do nothing
+        }
+        }
         return rec.toMap2();
     }
 
