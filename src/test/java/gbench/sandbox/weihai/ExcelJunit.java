@@ -66,8 +66,8 @@ public class ExcelJunit {
         final IRecord rec = IRecord.REC("url", "jdbc:h2:mem:kvps;MODE=MYSQL;DB_CLOSE_DELAY=-1", "driver",
                 "org.h2.Driver", "user", "sa", "password", "");
         final DataSource ds = ds(rec);
-        final DBModel dbModel = new DBModel(ds);
-        dbModel.loadXls("E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx");
+        @SuppressWarnings("unused")
+        final DBModel dbModel = new DBModel(ds,"E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx");
     }
 
 }

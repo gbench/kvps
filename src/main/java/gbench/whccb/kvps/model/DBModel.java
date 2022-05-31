@@ -12,6 +12,7 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import gbench.util.data.DataApp;
@@ -28,15 +29,16 @@ public class DBModel {
      * 
      * @param ds 数据源
      */
-    public DBModel(final DataSource ds) {
+    public DBModel(final DataSource ds,
+            @Value("${excel.data.devops.file:E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx}") String excel_data_devops_file) {
         dataMain = new DataApp(ds);
-        this.initalize();
+        this.initalize(excel_data_devops_file);
     }
 
     /**
      * 基础数据的准备
      */
-    public void initalize() {
+    public void initalize(final String excel_data_devops_file) {
         dataMain.withTransaction(sess -> {
             // 创建用户表
             final IRecord proj_proto = REC("id", 1, "name", "项目1");
@@ -69,7 +71,9 @@ public class DBModel {
         }); // withTransaction
 
         // 加载devops数据
-        this.loadXls("E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx");
+        if (excel_data_devops_file != null) {
+            this.loadXlsx(excel_data_devops_file);
+        }
     }
 
     /**
@@ -87,7 +91,7 @@ public class DBModel {
      * 
      * @param path
      */
-    public void loadXls(final String path) {
+    public void loadXlsx(final String path) {
         final SimpleExcel excel = SimpleExcel.of(path);
         excel.sheetS().forEach(sht -> {
             final DFrame dfm = excel.autoDetect(sht).mapByRow(IRecord::REC).collect(DFrame.dfmclc);
