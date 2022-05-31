@@ -2103,7 +2103,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param <T> 元组值类型
      * @return IRecord类型的T元素归集器
      */
-    public static <T, U> Collector<Tuple2<String, T>, ?, IRecord> recclc() {
+    public static <T> Collector<Tuple2<String, T>, ?, IRecord> recclc() {
         return IRecord.recclc(e -> e);
     }
 
