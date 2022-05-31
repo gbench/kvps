@@ -2100,6 +2100,16 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * Record类型的T元素归集器
      * 
+     * @param <T> 元组值类型
+     * @return IRecord类型的T元素归集器
+     */
+    public static <T, U> Collector<Tuple2<String, T>, ?, IRecord> recclc() {
+        return IRecord.recclc(e -> e);
+    }
+
+    /**
+     * Record类型的T元素归集器
+     * 
      * @param <T>    元素类型
      * @param <U>    元组的1#位置占位符元素类型
      * @param mapper Tuple2 类型的元素生成器 t->(str,u)
