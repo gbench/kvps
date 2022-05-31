@@ -56,9 +56,9 @@ public class ProjMgmtController {
         case "uatents": { //
             // 验收申请
             final Object proj = params[0]; // 项目信息 的 json, IRecord 可以理解为一个 JAVA 实现 的 JS的Object 模型。
-            final Object reqents = params[1]; // 需求条目
-            rec.add("handler", IRecord.REC("event_handler", "handle_uatents(proj,reqents)", "desc", "未知信息", "name", "",
-                    "proj", proj, "reqents", reqents));
+            final Object reqents = params[1]; // 验收条目的需求条目
+            rec.add("handler", IRecord.REC("event_handler", "handle_uatents(proj,reqents)", "desc", "验收测试", "name",
+                    "uatents", "proj", proj, "reqents", reqents));
             // handle_uatents(params);
             break;
         }
