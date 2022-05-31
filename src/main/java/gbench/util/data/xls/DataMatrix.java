@@ -79,7 +79,7 @@ public class DataMatrix<T> {
         } // for i
 
         // 设置键名列表
-        this.ids_of_keys(final_hh);// 设置表头，表头与键名列表同义
+        this.setKeys(final_hh);// 设置表头，表头与键名列表同义
 
         return this;
     }
@@ -101,7 +101,7 @@ public class DataMatrix<T> {
                 ? Stream.iterate(0, i -> i + 1).map(DataMatrix::to_excel_name).limit(n).collect(Collectors.toList())
                 : hh;
 
-        this.ids_of_keys(final_hh);// 设置表头
+        this.setKeys(final_hh);// 设置表头
 
         return this;
     }
@@ -129,8 +129,8 @@ public class DataMatrix<T> {
      * 
      * @return 返回 数据 的表头，列名序列
      */
-    public List<String> header() {
-        return this.keyname_2_keyid.entrySet().stream().sorted(Comparator.comparingInt(Entry::getValue))
+    public List<String> keys() {
+        return this.keymetas.entrySet().stream().sorted(Comparator.comparingInt(Entry::getValue))
                 .map(Entry::getKey).collect(Collectors.toList());
     }
 
@@ -140,10 +140,10 @@ public class DataMatrix<T> {
      * @param keys 列名字段序列:
      * @return Map<String,Integer>
      */
-    public Map<String, Integer> ids_of_keys(final List<?> keys) {
+    public Map<String, Integer> setKeys(final List<?> keys) {
         final Map<String, Integer> keysMap = new HashMap<>();
         if (keys == null) {
-            final List<String> hh = this.header();
+            final List<String> hh = this.keys();
             for (int i = 0; i < hh.size(); i++) {
                 keysMap.put(hh.get(i), i);
             } // for
@@ -152,7 +152,7 @@ public class DataMatrix<T> {
             for (Object key : keys) {
                 keysMap.put(key + "", i++);
             } // for
-            this.keyname_2_keyid(keysMap);
+            this.setKeymetas(keysMap);
         } // if
         return keysMap;
     }
@@ -184,7 +184,7 @@ public class DataMatrix<T> {
      * @return U 类型的流
      */
     public <U> Stream<U> rowS(final Function<LinkedHashMap<String, T>, U> mapper) {
-        final String hh[] = this.header().toArray(new String[0]);
+        final String hh[] = this.keys().toArray(new String[0]);
         final int hn = hh.length;// 表头长度
         @SuppressWarnings("unchecked")
         Function<LinkedHashMap<String, T>, U> final_mapper = mapper == null ? e -> (U) e : mapper;
@@ -211,12 +211,12 @@ public class DataMatrix<T> {
     /**
      * 设置矩阵的表头字段序列:
      * 
-     * @param keyname_2_keyid {(name,id)}的字段序列
+     * @param keymetas {(name,id)}的字段序列
      * @return 设置成功的 表头字段序列：{(name,id)}的字段序列
      */
-    public Map<String, Integer> keyname_2_keyid(final Map<String, Integer> keyname_2_keyid) {
-        this.keyname_2_keyid = keyname_2_keyid;
-        return keyname_2_keyid;
+    public Map<String, Integer> setKeymetas(final Map<String, Integer> keymetas) {
+        this.keymetas = keymetas;
+        return keymetas;
     }
 
     /**
@@ -282,7 +282,7 @@ public class DataMatrix<T> {
         if (cells == null || cells.length < 1 || cells[0] == null || cells[0].length < 1)
             return "";
         final StringBuilder buffer = new StringBuilder();
-        final String headline = String.join(ident, this.header());
+        final String headline = String.join(ident, this.keys());
         if (!headline.matches("\\s*"))
             buffer.append(headline).append(ln);
 
@@ -321,7 +321,7 @@ public class DataMatrix<T> {
                 for (int j = 0; j < n; j++)
                     uu[i][j] = itr.hasNext() ? itr.next() : null;
 
-            return new DataMatrix<>(uu, this.header());
+            return new DataMatrix<>(uu, this.keys());
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -498,7 +498,7 @@ public class DataMatrix<T> {
      * @param j1    终点行索引 包含 对于超过最大范文的边界节点采用 循环取模的办法给与填充
      * @return 子矩阵
      */
-    public static <U> U[][] sub_2darray(final U[][] cells, final int i0, final int j0, final int i1, final int j1) {
+    public static <U> U[][] submatrix(final U[][] cells, final int i0, final int j0, final int i1, final int j1) {
         final int h = i1 - i0 + 1;
         final int w = j1 - j0 + 1;
         final Tuple2<Integer, Integer> shape = DataMatrix.shape(cells);
@@ -576,6 +576,6 @@ public class DataMatrix<T> {
     }
 
     private T[][] cells; // 单元格数据
-    private Map<String, Integer> keyname_2_keyid = new HashMap<>();// 表头名-->列id索引 的 Map,列id索引从0开始
+    private Map<String, Integer> keymetas = new HashMap<>();// 表头名-->列id索引 的 Map,列id索引从0开始
 
 }

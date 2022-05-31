@@ -9,7 +9,7 @@ public class StrMatrix extends DataMatrix<String> {
     }
 
     public StrMatrix(DataMatrix<String> mm) {
-        this(mm.data(), mm.header());
+        this(mm.data(), mm.keys());
     }
 
     /**

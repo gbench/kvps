@@ -456,7 +456,7 @@ public class SimpleExcel implements AutoCloseable {
         if (cc == null)
             return null;
         final String cells[][] = cc.data();
-        final List<String> headers = cc.header();
+        final List<String> headers = cc.keys();
         return new StrMatrix(cells, headers);
     }
     
