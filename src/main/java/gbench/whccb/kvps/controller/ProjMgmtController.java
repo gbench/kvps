@@ -3,6 +3,7 @@ package gbench.whccb.kvps.controller;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,6 +25,21 @@ public class ProjMgmtController {
     public Map<String, Object> teamGroup(final String proj_key) {
         final IRecord rec = IRecord.REC("code", 0);
         rec.add("users", dbModel.teamGroup(proj_key));
+        return rec.toMap2();
+    }
+
+    /**
+     * 获取项目团队成员信息
+     * 
+     * http://localhost:8089/kvps/pm/send
+     * 
+     * @param message 消息对象 {name,key1,key2,....}
+     * @return 项目团队
+     */
+    @RequestMapping(value = "send",consumes = "application/json")
+    public Map<String, Object> send(final @RequestBody String message) {
+        final IRecord rec = IRecord.REC("code", 0);
+        rec.add("message", IRecord.REC(message));
         return rec.toMap2();
     }
 

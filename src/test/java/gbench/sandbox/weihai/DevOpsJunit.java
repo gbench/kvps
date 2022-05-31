@@ -191,7 +191,8 @@ public class DevOpsJunit {
      */
     public static HttpEntity rec2inputstream_entity(final IRecord rec) {
         final Map<String, Object> map = rec.filter(e -> !e._1().startsWith("$")).toMap2();// 去除调$属性
-        return json2inputstream_entity(MyRecord.toJson(map));
+        return json2inputstream_entity(MyRecord.toJson(map),
+                rec.strOpt("$content_type").orElse("application/json;charset=UTF-8"));
     }
 
     /**
@@ -200,10 +201,11 @@ public class DevOpsJunit {
      * @param json json 字符串
      * @return HttpEntity
      */
-    public static HttpEntity json2inputstream_entity(final String json) {
+    public static HttpEntity json2inputstream_entity(final String json, String contentType) {
         final byte bb[] = json.getBytes();
         final InputStream inputStream = new ByteArrayInputStream(bb, 0, bb.length);
-        final HttpEntity entity = new InputStreamEntity(inputStream, bb.length); // 请求体
+        final InputStreamEntity entity = new InputStreamEntity(inputStream, bb.length); // 请求体
+        entity.setContentType(contentType);
         return entity;
     }
 
@@ -583,7 +585,16 @@ public class DevOpsJunit {
                 REC("name", bz_key + "_" + LocalDateTime.now(), "create_time", LocalDateTime.now())));
     }
 
-    static {
+    /**
+     * 业务场景的模拟:发送消息
+     */
+    @Test
+    public void qux4() {
+        String host = "http://localhost:8089";
+        final String api = IRecord.FT("$0$1", host, "/kvps/pm/send");
+        final IRecord rec = send2(api,
+                REC("$entity_type", "json", "name", "reqdec", "keys", asList("key1,key2,key3".split("[,]+"))));
+        println(rec);
 
     }
 
