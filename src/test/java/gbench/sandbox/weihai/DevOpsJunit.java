@@ -1,5 +1,6 @@
 package gbench.sandbox.weihai;
 
+import static gbench.util.lisp.IRecord.FT;
 import static gbench.util.lisp.IRecord.REC;
 import static gbench.util.io.Output.println;
 import static java.util.Arrays.asList;
@@ -331,18 +332,64 @@ public class DevOpsJunit {
      */
     @Test
     public void auth_oauth_token() {
-        String host = "http://localhost:8089/kvps";
-        host = "http://10.24.24.53:8182";
-        final String api = IRecord.FT("$0$1", host, "/auth/oauth/token");
-        println(api);
-        final String data = send(api, REC( //
+        String host = "http://10.24.24.53:8182";
+
+        // 获取参数
+        final IRecord token_resp = send2(FT("$0$1", host, "/auth/oauth/token"), REC( //
                 "$entity_type", "url_encoded_form_entity", "$header",
                 REC("Authorization", "Basic Y2xpZW50OnNlY3JldA=="), //
                 "username", "TOKEN_API", //
                 "password", "U2FsdGVkX18qz8S9JC", //
                 "scope", "all", //
                 "grant_type", "password"));
-        println(data);
+        println(token_resp);
+        final String access_token = token_resp.str("access_token"); // 提取访问token
+
+        final int code = 3;
+        switch (code) {
+        case 1: {
+            // 创建系统
+            final IRecord system_insert_resp = send2(FT("$0$1", host, "/auth/oa/system/insert"), REC( //
+                    "$method", "post", "$entity_type", "json", "$header", REC("Authorization", access_token),
+                    "majorUserName", "zhangsan", "oid", "zhangsan_sys" + System.currentTimeMillis(), "providerName",
+                    "zhngsan_provider", "systemCode", "ZS", "systemName", "张三系统"));
+            println(system_insert_resp);
+            break;
+        }
+        case 2: {
+            // 创建项目
+            final IRecord project_insert_resp = send2(FT("$0$1", host, "/auth/oa/system/insert"), REC( //
+                    "$method", "post", "$entity_type", "json", "$header", REC("Authorization", access_token), //
+                    "title", "ABC", "projectDevType", "0", //
+                    "hostSystemOid", "12345671234567123456712345671231", "projectUserName", "0001", //
+                    "describe", "ABC", "oid", "202205241429314753290", //
+                    "processId", "202205241429314762625", //
+                    "projectStatus", "0", //
+                    "approvalNodes", asList(REC("activityName", "项目经理", "createDate", "2022-05-16 15:08:24.182",
+                            "createUserName", "项目负责人", "actionName", "项目经理", "msg", "项目负责人") //
+                    ) //
+                    , "startDate", "2022-05-31", "endDate", "2022-06-31"//
+            ));
+            println("---------------------");
+            println(project_insert_resp);
+            break;
+        }
+
+        case 3: { // 系统列表
+            // 查看系统列表
+            final IRecord system_list_resp = send2(FT("$0$1", host, "/auth/oa/system/list/map"), REC( //
+                    "$method", "get", "$header", REC("Authorization", access_token)));
+            println(system_list_resp);
+            if (system_list_resp.i4("code") == 200) {
+                final DFrame dfm = system_list_resp.llS("result").map(IRecord::REC).collect(DFrame.dfmclc);
+                println(dfm);
+            }
+            break;
+        }
+        default: {
+            println("do nothing");
+        }
+        }
     }
 
     /**
