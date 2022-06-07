@@ -46,10 +46,10 @@ public class DEVOPS_SUPPLIES_Junit {
         println("需求管理/项目需求");
         //
         final IRecord proj_req = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", "") //
+                "proj_code", REC("label", "所属项目编号", "value", "") //
                 , "req-ents", asList( // 需求条目
                         REC( // 条目属性
-                                "req_id", REC("label", "需求ID", "value", "") //
+                                "req_code", REC("label", "需求ID", "value", "") //
                                 , "title", REC("label", "需求条目标题", "value", "") //
                                 , "status", REC("label", "需求条目状态", "value", "") //
                         )));
@@ -69,7 +69,7 @@ public class DEVOPS_SUPPLIES_Junit {
         println("需求管理/日常需求");
         //
         final IRecord proj_req = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", "") //
+                "proj_code", REC("label", "所属项目编号", "value", "") //
                 , "req-id", REC("label", "需求父级ID") //
                 , "req-ents", asList( // 需求条目
                         REC( // 条目属性
@@ -97,11 +97,11 @@ public class DEVOPS_SUPPLIES_Junit {
         println("UAT提测申请/UAT测试");
         //
         final IRecord proj_req = REC( //
-                "req_id", REC("label", "需求单ID", "value", "") //
+                "req_code", REC("label", "需求单ID", "value", "") //
                 , "sched-id", REC("label", "排期ID", "value", "") //
                 , "req-ents", asList( // 需求条目
                         REC( // 条目属性
-                                "ent_id", REC("label", "需求ID", "value", "") //
+                                "ent_code", REC("label", "条目编码", "value", "") //
                                 , "sched_id", REC("label", "排期ID", "value", "") //
                                 , "title", REC("label", "需求条目标题", "value", "") //
                                 , "status", REC("label", "需求条目状态", "value", "") //

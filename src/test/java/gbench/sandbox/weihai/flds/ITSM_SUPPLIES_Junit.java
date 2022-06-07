@@ -46,17 +46,19 @@ public class ITSM_SUPPLIES_Junit {
         println("项目信息/项目基本信息");
         //
         final IRecord proj = REC(//
-                "sys_id", REC("label", "系统ID", "value", "") //
-                , "label", REC("label", "项目名称", "value", "") //
-                , "executive", REC("label", "项目负责人", "value", "") //
-                , "start_date", REC("label", "项目开始日期", "value", "") //
-                , "due_date", REC("label", "项目结束", "value", "") //
-                , "description", REC("label", "项目描述", "value", "") //
-                , "proj_id", REC("label", "项目编号", "value", "") //
-                , "type", REC("label", "项目研发类型", "value", "") //
-                , "flow_id", REC("label", "流程id", "value", "") //
-                , "status", REC("label", "项目状态", "value", "") //
+                "sys_id", REC("label", "系统ID", "value", "") //   hostSystemOid  业务系统ID
+                , "label", REC("label", "项目名称", "value", "") // title 项⽬标题
+                , "executive", REC("label", "项目负责人", "value", "") // projectUserName
+                , "start_date", REC("label", "项目开始日期", "value", "") // 项⽬的启动⽇期 yyyy-mm-dd
+                , "due_date", REC("label", "项目结束", "value", "") // 项⽬的结束⽇期 yyyy-MM-dd
+                , "description", REC("label", "项目描述", "value", "") // describe 项⽬启动相关描述
+                , "proj_code", REC("label", "项目编号", "value", "") //
+                , "type", REC("label", "项目研发类型", "value", "") // projectDevType
+                , "flow_id", REC("label", "流程id", "value", "") // processId
+                , "status", REC("label", "项目状态", "value", "") // projectStatus 项⽬状态（0:进⾏中｜1:已投产｜2:已验收｜3:已归档）
         );
+        
+        // approvalNodes 审批节点列表 缺失。
 
         System.out.println(toJson(proj.toMap2()));
 
@@ -67,6 +69,7 @@ public class ITSM_SUPPLIES_Junit {
     /**
      * 
      * 事件：提交入场申请审批通过后进行推送 <br>
+     * 创建项目：/auth/oa/project/insert
      * 
      * 外包人员入场/外包入场申请
      */
@@ -75,7 +78,7 @@ public class ITSM_SUPPLIES_Junit {
         println("外包人员入场/外包入场申请");
         //
         final IRecord outsrc_workers = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", "") //
+                "proj_code", REC("label", "所属项目编号", "value", "") //
                 , "company", REC("label", "供应商名称", "value", "") //
                 , "workers", asList(REC( //
                         "label", REC("label", "姓名", "value", "") //
@@ -98,7 +101,7 @@ public class ITSM_SUPPLIES_Junit {
         println("需求管理/项目需求");
         //
         final IRecord proj_req = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", ""), //
+                "proj_code", REC("label", "所属项目编号", "value", ""), //
                 "req_doc_url", REC("label", "需求分析说明书", "value", "") //
         );
 
@@ -117,15 +120,15 @@ public class ITSM_SUPPLIES_Junit {
         println("需求管理/日常需求");
         //
         final IRecord proj_req = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", "") //
-                , "req_id", REC("label", "需求ID", "value", "") //
+                "proj_code", REC("label", "所属项目编号", "value", "") //
+                , "req_code", REC("label", "需求ID", "value", "") //
                 , "title", REC("label", "业务单标题", "value", "") //
-                , "title", REC("label", "业务需求主办系统", "value", "") //
-                , "title", REC("label", "业务需求主办项目", "value", "") //
-                , "title", REC("label", "业务需求协办系统列表", "value", "") //
-                , "title", REC("label", "业务需求开始日期", "value", "") //
-                , "title", REC("label", "业务需求截止日期", "value", "") //
-                , "title", REC("label", "需求分析书名书路径", "value", "") //
+                , "main_sysid", REC("label", "业务需求主办系统", "value", "") //
+                , "main_proj_code", REC("label", "业务需求主办项目", "value", "") //
+                , "relavent_sysids", REC("label", "业务需求协办系统列表", "value", "") //
+                , "start_date", REC("label", "业务需求开始日期", "value", "") //
+                , "due_date", REC("label", "业务需求截止日期", "value", "") //
+                , "req_doc_url", REC("label", "需求分析书名书路径", "value", "") //
         );
 
         System.out.println(toJson(proj_req.toMap2()));
@@ -143,14 +146,14 @@ public class ITSM_SUPPLIES_Junit {
         println("UAT提测结果/UAT测试流程");
         //
         final IRecord uat_res = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", "") //
+                "proj_code", REC("label", "所属项目编号", "value", "") //
                 , "sched_id", REC("label", "排期ID", "value", "") //
                 , "req-ents", asList( // 需求条目列表
-                        REC("ent_id", REC("label", "需求条目id", "value", ""), "label",
-                                REC("label", "需求条目名称", "value", ""))),
+                        REC("ent_code", REC("label", "需求条目id", "value", ""),  //
+                             "name", REC("label", "需求条目名称", "value", ""))),
                 "test_ents", asList( // 需求条目以及对应的测试结果
                         REC( //
-                                "ent_id", REC("label", "需求条目id", "value", ""), //
+                                "ent_code", REC("label", "需求条目id", "value", ""), //
                                 "test-result", REC("label", "测试结果", "value", "")) //
                 ), //
                 "result", REC("label", "审批结果 ", "value", ""));
@@ -169,7 +172,7 @@ public class ITSM_SUPPLIES_Junit {
         println("投产申请结果/投产上线流程发起");
         //
         final IRecord launch_res = REC( //
-                "proj_id", REC("label", "所属项目编号", "value", "") //
+                "proj_code", REC("label", "所属项目编号", "value", "") //
                 , "sched_id", REC("label", "排期ID", "value", "") //
                 , "msg_deploy", REC("label", "投产审批通过后部署通知", "value", "") //
                 , "msg_launch", REC("label", "投产结果通知", "value", "") //
@@ -188,12 +191,12 @@ public class ITSM_SUPPLIES_Junit {
 
         println("里程碑信息/里程碑同步");
         //
-        final IRecord milestones = REC("proj_id", REC("label", "所属项目编号", "value", "") //
+        final IRecord milestones = REC("proj_code", REC("label", "所属项目编号", "value", "") //
                 , "milestones", asList( // 里程碑节点
                         REC("name", REC("label", "里程碑节点", "value", ""), "deliverable",
-                                REC("label", "里程碑交付物", "value", ""), "deliverable_url",
-                                REC("label", "里程碑交付物路径", "value", ""), "due_date",
-                                REC("label", "里程碑节点预计截止日期", "value", ""))));
+                                REC("delivarable", "里程碑交付物", "value", ""), "deliverable_url",
+                                REC("delivarable_url", "里程碑交付物路径", "value", ""), "due_date",
+                                REC("due_date", "里程碑节点预计截止日期", "value", ""))));
 
         System.out.println(toJson(milestones.toMap2()));
 
@@ -223,7 +226,7 @@ public class ITSM_SUPPLIES_Junit {
     public Map<String, Object> post_itsm_proj_req(@RequestBody String json) {
 //        //
 //        final IRecord proj_req = REC(
-//                "proj_id",REC("label","所属项目编号","value",""), //
+//                "proj_code",REC("label","所属项目编号","value",""), //
 //                "req_doc_url",REC("label","需求分析说明书","value","") //
 //        );
 //        
