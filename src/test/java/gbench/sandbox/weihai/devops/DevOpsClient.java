@@ -21,6 +21,16 @@ public class DevOpsClient extends MyHttpClient {
         final String access_token = token_resp.str("access_token"); // 提取访问token
         return access_token;
     }
+    
+    /**
+     * 
+     * @param url
+     * @return
+     */
+    public String apiOf(String url) {
+        final String api = FT("$0$1", host, url);
+        return api;
+    }
 
     /**
      * 
@@ -31,6 +41,19 @@ public class DevOpsClient extends MyHttpClient {
     public IRecord post_json(final String api, final IRecord params) {
         final IRecord req0 = REC( //
                 "$method", "post", "$entity_type", "json", "$header", REC("Authorization", access_token()));
+        final IRecord req_params = req0.derive((params));
+        return DevOpsClient.send2(api, req_params);
+    }
+    
+    /**
+     * 
+     * @param api
+     * @param params
+     * @return
+     */
+    public IRecord get(final String api, final IRecord params) {
+        final IRecord req0 = REC( //
+                "$method", "get", "$header", REC("Authorization", access_token()));
         final IRecord req_params = req0.derive((params));
         return DevOpsClient.send2(api, req_params);
     }
