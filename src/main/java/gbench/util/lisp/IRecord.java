@@ -120,7 +120,6 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回一个 Map 结构,递归遍历<br>
-     * 非递归进行变换
      * 
      * @return 一个 键值 对儿 的 列表 [(key,map)]
      */
