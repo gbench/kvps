@@ -27,7 +27,7 @@ public class ProjectJunit extends DevOpsClient {
         final IRecord proj_param = REC( //
                 "title", "ITSM-PROJ001", //
                 "projectDevType", "0", //
-                "hostSystemOid", "ITSM", 
+                "hostSystemOid", "ITSM",  // 需要与 系统Id相一致。
                 "projectUserName", "zhangsan", // 需要与系统负责人需要与项目负责人。
                 "describe", "ITSM-PROJ001", //
                 "oid", "202206071429314753290", //

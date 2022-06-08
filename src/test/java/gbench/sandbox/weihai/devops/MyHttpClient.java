@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +42,7 @@ import gbench.util.lisp.IRecord;
 import gbench.util.lisp.MyRecord;
 
 public class MyHttpClient {
-    
+
     /**
      * 准备Get请求
      * 
@@ -245,12 +246,12 @@ public class MyHttpClient {
 
     /**
      * 
-     * 文件接口发送
+     * 指定url的请求发送
      * 
-     * @param url
-     * @param params
-     * @param encoding
-     * @return
+     * @param url      接口地址
+     * @param params   接口与参数
+     * @param encoding 接口编码
+     * @return 接口返回
      */
     public static IRecord send2(final String url, final IRecord params) {
         return IRecord.REC(send(url, params, "utf8"));
@@ -260,10 +261,10 @@ public class MyHttpClient {
      * 
      * 文件接口发送
      * 
-     * @param url
-     * @param params
-     * @param encoding
-     * @return
+     * @param url      接口地址
+     * @param params   接口与参数
+     * @param encoding 接口编码
+     * @return 接口返回
      */
     public static String send(final String url, final IRecord params) {
         return send(url, params, "utf8");
@@ -273,10 +274,10 @@ public class MyHttpClient {
      * 
      * 文件接口发送
      * 
-     * @param url
-     * @param params
-     * @param encoding
-     * @return
+     * @param url      接口地址
+     * @param params   接口参数
+     * @param encoding 接口编码
+     * @return 接口返回
      */
     public static String send(final String url, final IRecord params, final String encoding) {
         String body = "";
@@ -299,10 +300,12 @@ public class MyHttpClient {
             response.close();
         } catch (IOException e) {
             e.printStackTrace();
+            final IRecord error = REC("error", 1, "msg", e.getMessage(), "stackTrace",
+                    Arrays.stream(e.getStackTrace()).map(Object::toString).toArray());
+            body = error.json();
         }
 
         return body;
     }
-
 
 }
