@@ -35,24 +35,23 @@ public class SystemJunit extends DevOpsClient {
 
     /**
      * 
-     * @param sysName
+     * @param sysName 系统名 或 缩写
      * @return
      */
     public String sysIdOf(final String sysName) {
-        return systemOf(sysName).map(e -> {
-                    return e.str("id");
-                }).orElse(null);
+        return optOf(sysName).map(e -> e.str("id")).orElse(null);
     }
-    
+
     /**
      * 
-     * @param sysName
+     * @param sysName 系统名 或 缩写
      * @return
      */
-    public Optional<IRecord> systemOf(final String sysName) {
+    public Optional<IRecord> optOf(final String sysName) {
         final IRecord resp = this.list();
         final DFrame dfm = resp.llS("result").map(IRecord::REC).collect(DFrame.dfmclc);
-        return dfm.rowS().filter(e -> sysName.equals(e.str("label")) || sysName.equals(e.str("value").trim())).findFirst();
+        return dfm.rowS().filter(e -> sysName.equals(e.str("label")) || sysName.equals(e.str("value").trim()))
+                .findFirst();
     }
 
     @Test
@@ -70,7 +69,7 @@ public class SystemJunit extends DevOpsClient {
         final IRecord resp = this.list();
         final DFrame dfm = resp.llS("result").map(IRecord::REC).collect(DFrame.dfmclc);
         println(dfm);
-        //println(sysIdOf("ITSM"));
+        // println(sysIdOf("ITSM"));
 
     }
 

@@ -4,6 +4,9 @@ import static gbench.util.io.Output.println;
 import static gbench.util.lisp.IRecord.FT;
 import static gbench.util.lisp.IRecord.REC;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import gbench.util.lisp.IRecord;
 
 public class DevOpsClient extends MyHttpClient {
@@ -56,6 +59,15 @@ public class DevOpsClient extends MyHttpClient {
                 "$method", "get", "$header", REC("Authorization", access_token()));
         final IRecord req_params = req0.derive((params));
         return DevOpsClient.send2(api, req_params);
+    }
+    
+    /**
+     * 时间戳对象id
+     * @return 时间戳对象id
+     */
+    public String oid() {
+        final DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSSSSS");
+        return LocalDateTime.now().format(dtf);
     }
 
     String host = "http://10.24.24.53:8182";
