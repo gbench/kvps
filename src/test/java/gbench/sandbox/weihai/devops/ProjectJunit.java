@@ -68,9 +68,7 @@ public class ProjectJunit extends DevOpsClient {
                 "oid", "202206071429314753290", //
                 "processId", "202206071429314753290", //
                 // "projectStatus", "0", //
-                "approvalNodes", asList(REC("activityName", "项目经理", "createDate", "2022-05-16 15:08:24.182",
-                        "createUserName", "项目负责人", "actionName", "项目经理", "msg", "项目负责人") //
-                ) //
+                "approvalNodes", this.approvalNodes(null) // 项目审批节点
                 , "startDate", "2022-06-07", "endDate", "2022-06-31"//
         );
         final IRecord resp = this.create(proj_param);
