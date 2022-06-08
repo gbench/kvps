@@ -80,5 +80,6 @@ public class ProjectJunit extends DevOpsClient {
     @Test
     public void qux() {
         println(oid());
+        println(this.approvalNodes(null));
     }
 }

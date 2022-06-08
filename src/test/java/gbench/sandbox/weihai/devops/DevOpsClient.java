@@ -4,8 +4,13 @@ import static gbench.util.io.Output.println;
 import static gbench.util.lisp.IRecord.FT;
 import static gbench.util.lisp.IRecord.REC;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 import gbench.util.lisp.IRecord;
 
@@ -24,7 +29,7 @@ public class DevOpsClient extends MyHttpClient {
         final String access_token = token_resp.str("access_token"); // 提取访问token
         return access_token;
     }
-    
+
     /**
      * 
      * @param url
@@ -47,7 +52,7 @@ public class DevOpsClient extends MyHttpClient {
         final IRecord req_params = req0.derive((params));
         return DevOpsClient.send2(api, req_params);
     }
-    
+
     /**
      * 
      * @param api
@@ -60,14 +65,31 @@ public class DevOpsClient extends MyHttpClient {
         final IRecord req_params = req0.derive((params));
         return DevOpsClient.send2(api, req_params);
     }
-    
+
     /**
      * 时间戳对象id
+     * 
      * @return 时间戳对象id
      */
     public String oid() {
-        final DateTimeFormatter dtf=DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSSSSS");
+        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSSSSS");
         return LocalDateTime.now().format(dtf);
+    }
+
+    /**
+     * 根据流程ID提取审批节点(流程审批记录)
+     * 
+     * @param flowId 流程id
+     * @return
+     */
+    public List<Map<String, Object>> approvalNodes(final String flowId) {
+        final List<Map<String, Object>> nodes = new ArrayList<Map<String, Object>>();
+        Arrays.stream("".split("[,]+"))
+                .map(e -> REC("actionName", "同意", "activityName", "项目申请部门-总经理-审批", "createDate",
+                        LocalDate.now().toString(), "createUserName", "zhangsan", "msg", "项目申请部门-总经理-审批-同意"))
+                .map(e -> e.toMap2()).forEach(nodes::add);
+
+        return nodes;
     }
 
     String host = "http://10.24.24.53:8182";
