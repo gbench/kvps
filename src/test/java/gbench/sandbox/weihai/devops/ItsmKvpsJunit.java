@@ -15,7 +15,7 @@ import gbench.util.lisp.IRecord;
  * @author xuqinghua
  *
  */
-public class ItsmJunit extends ItsmClient {
+public class ItsmKvpsJunit extends ItsmKvpsClient {
 
     /**
      * 项目创建

@@ -9,7 +9,7 @@ import com.alibaba.fastjson.JSONObject;
  * @author xuqinghua
  *
  */
-public class ItsmApiJunit extends ItsmClient2 {
+public class ItsmApiJunit extends ItsmClient {
 
     /**
      * 登录演示
