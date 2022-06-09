@@ -20,6 +20,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import gbench.sandbox.weihai.devops.util.Base64Util;
+import gbench.util.lisp.IRecord;
+import gbench.util.lisp.MyRecord;
 
 /**
  * 
@@ -96,7 +98,15 @@ public class ItsmClient2 {
      */
     public static JSONObject parseJson(String line) {
         return JSONObject.parseObject(line);
+    }
 
+    /**
+     * 
+     * @param obj
+     * @return
+     */
+    public static String toJson(final Object obj) {
+        return JSONObject.toJSONString(obj, false);
     }
 
     /**
@@ -117,12 +127,12 @@ public class ItsmClient2 {
      * 发送post请求
      * 
      * @param json
-     * @param URL
+     * @param url
      * @return
      */
-    public static String sendPost(String URL, JSONObject json, String token) {
+    public static String sendPost(String url, JSONObject json, String token) {
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpPost post = new HttpPost(URL);
+        HttpPost post = new HttpPost(url);
         post.setHeader("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
         post.addHeader("token", token);
         String result;
@@ -161,6 +171,77 @@ public class ItsmClient2 {
     public static String apiOf(final String path) {
         final String sep = path.startsWith("/") ? "" : "/";
         return HOST + sep + path;
+    }
+
+    /**
+     * MAP 键值对儿生成器
+     * 
+     * @param kvs 键,值序列:key0,value0,key1,value1,.... <br>
+     *            Map结构（IRecord也是Map结构） 或是 键名,键值 序列。即 build(map) 或是
+     *            build(key0,value0,key1,vlaue1,...) 的 形式， 特别注意 build(map) 时候，当且仅当
+     *            kvs 的只有一个元素，即 build(map0,map1) 会被视为 键值序列
+     * @return
+     */
+    public static JSONObject JREC(Object... kvs) {
+        return JSONObject.parseObject(toJson(REC(kvs)));
+    }
+
+    /**
+     * MAP 键值对儿生成器
+     * 
+     * @param kvs 键,值序列:key0,value0,key1,value1,.... <br>
+     *            Map结构（IRecord也是Map结构） 或是 键名,键值 序列。即 build(map) 或是
+     *            build(key0,value0,key1,vlaue1,...) 的 形式， 特别注意 build(map) 时候，当且仅当
+     *            kvs 的只有一个元素，即 build(map0,map1) 会被视为 键值序列
+     * @return
+     */
+    public static Map<String, Object> REC(Object... kvs) {
+        final int n = kvs.length;
+        final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+
+        if (n == 1) { // 单一参数情况
+            final Object obj = kvs[0];
+            if (obj instanceof Map) { // Map情况的数据处理
+                ((Map<?, ?>) obj).forEach((k, v) -> { // 键值的处理
+                    data.put(k + "", v);
+                }); // forEach
+            } else if (obj instanceof IRecord) {// IRecord 对象类型 复制对象数据
+                data.putAll(((IRecord) obj).toMap());
+            } else if (obj instanceof String) { // 字符串类型的单个参数
+                final IRecord rec = MyRecord.fromJson(obj.toString()); // 尝试解析json
+                if (rec != null) {
+                    data.putAll(rec.toMap());
+                }
+            } // if
+        } else { // 键名减值序列
+            for (int i = 0; i < n - 1; i += 2) {
+                data.put(kvs[i].toString(), kvs[i + 1]);
+            }
+        } // if
+        return data;
+    }
+
+    /**
+     * 发送post请求,带有解析翻译的
+     * 
+     * @param json
+     * @param url
+     * @return
+     */
+    public static String send_post(String url, JSONObject json, String token) {
+        final String line = sendPost(url, json, token);
+        return Base64Util.unescape(line);
+    }
+
+    /**
+     * 发送post请求,带有解析翻译的
+     * 
+     * @param json
+     * @param url
+     * @return
+     */
+    public static JSONObject send_post2(String url, JSONObject json, String token) {
+        return JSONObject.parseObject(send_post(url, json, token));
     }
 
     public static String ROOT_USER = "sys_admin";
