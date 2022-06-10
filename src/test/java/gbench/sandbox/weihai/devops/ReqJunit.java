@@ -6,6 +6,7 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import gbench.util.lisp.IRecord;
+import gbench.whccb.client.DevOpsClient;
 
 /**
  * 

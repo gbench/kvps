@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
 import gbench.util.lisp.Tuple2;
+import gbench.whccb.client.DevOpsClient;
 
 public class EmployeeJunit extends DevOpsClient{
     /**

@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import gbench.util.lisp.IRecord;
+import gbench.whccb.client.DevOpsClient;
 
 /**
  * 

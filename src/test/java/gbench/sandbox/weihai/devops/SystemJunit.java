@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import gbench.util.io.Output;
 import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
+import gbench.whccb.client.DevOpsClient;
 
 public class SystemJunit extends DevOpsClient {
 
