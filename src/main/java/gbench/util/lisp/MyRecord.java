@@ -13,10 +13,6 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import gbench.util.json.MyJson;
 
 /**
@@ -115,17 +111,7 @@ public class MyRecord implements IRecord, Serializable {
      * @return IRecord
      */
     public static IRecord fromJson(final String json) {
-        IRecord rec = null;
-
-        try {
-            rec = objM.readValue(json, IRecord.class);
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-
-        return rec;
+        return MyJson.fromJson(json);
     }
 
     /**
@@ -135,13 +121,7 @@ public class MyRecord implements IRecord, Serializable {
      * @return json 字符串
      */
     public static String toJson(final Object obj) {
-        String json = null;
-        try {
-            json = objM.writeValueAsString(obj);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return json;
+        return MyJson.toJson(obj);
     }
 
     /**
@@ -234,6 +214,4 @@ public class MyRecord implements IRecord, Serializable {
     }
 
     private LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
-
-    private static ObjectMapper objM = MyJson.recM();
 }

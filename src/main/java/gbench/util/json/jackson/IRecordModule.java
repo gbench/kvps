@@ -25,7 +25,7 @@ public class IRecordModule extends SimpleModule {
      * @author gbench
      *
      */
-    public class IRecordDeserializer extends AbstractDeserializer<IRecord> {
+    public static class IRecordDeserializer extends AbstractDeserializer<IRecord> {
 
         private static final long serialVersionUID = 637227298143614828L;
 
@@ -50,7 +50,7 @@ public class IRecordModule extends SimpleModule {
      * @author gbench
      *
      */
-    public class IRecordSerializer extends AbstractSerializer<IRecord> {
+    public static class IRecordSerializer extends AbstractSerializer<IRecord> {
 
         private static final long serialVersionUID = -6713069486531158400L;
 
