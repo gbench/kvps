@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script src="https://unpkg.com/jquery@3.6.0/dist/jquery.js"></script>
+	<script src="https://unpkg.com/lodash@4.17.21/lodash.js"></script>
+	<script src="https://unpkg.com/moment@2.29.3/moment.js"></script>
+
+	<script src="https://unpkg.com/vue@next"></script>
+	<script src="https://unpkg.com/vue-router@next"></script>
+	<script src="https://unpkg.com/vuex@next"></script>
+	<script src="https://unpkg.com/jsoneditor@9.7.4/dist/jsoneditor.min.js"></script>
+
+	<script src="./components/DataTable.js"></script>
+	<script src="./modules/MyProjectModule.js"></script>
+	<script src="./store.js"></script>
+	<script src="./MyProject.js"></script>
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/themes/default/style.min.css" />
+
+	<script>
+		$(function () {
+
+			/**
+			 * 加载页面模板，开始进行页面渲染。
+			 */
+			function on_loaded(MyProject_tpl) {
+
+				
+				// 添加模板
+				MyProject.template = MyProject_tpl;
+				
+
+				// 设置路由
+				const routes = [ // 定义控件路由
+					{ path: "/", redirect: "/MyProject" }, // 设置默认路由
+					{ path: "/MyProject", component: MyProject }, // 流程数据
+				];
+
+				// 创建路由
+				const router = VueRouter.createRouter({
+					history: VueRouter.createWebHashHistory(),
+					routes, // (缩写) 相当于 routes: routes
+				}); // 路由对象
+
+
+				// 生成vue对象
+				const app = Vue.createApp({});
+				app.component('data-table', DataTable);
+				app.use(store)
+					.use(router)
+					.mount('#app');
+			}
+
+			// 提取模板
+			$.when($.get("templates/myproject"))
+				.done((myproject) => { // 模板加载
+					on_loaded(myproject[0]);
+				}); // when
+
+		});// ready function
+	</script>
+
+	<style>
+		.gtbl {
+			border-collapse: collapse;
+			border-spacing: 0px;
+		}
+
+		.gtbl th {
+			color: white;
+			background-color: purple;
+			border: solid 1px purple;
+		}
+
+		.gtbl td {
+			border: solid 1px purple;
+		}
+
+		.gtbl tr:hover {
+			color: black;
+			background-color: lightyellow;
+			cursor: pointer;
+		}
+
+		.highlight {
+			color: black;
+			font-weight: bold;
+			background-color: bisque;
+			cursor: pointer;
+		}
+
+		.proj-list tr:hover {
+			color: black;
+			background-color: lightyellow;
+			cursor: pointer;
+		}
+
+		.deliverable-list tr:hover {
+			color: black;
+			background-color: lightyellow;
+			cursor: pointer;
+		}
+
+		.phases-navi li:hover {
+			color: black;
+			background-color: lightyellow;
+			cursor: pointer;
+		}
+
+		.tblclass tr:hover {
+			color: black;
+			background-color: lightyellow;
+			cursor: pointer;
+		}
+
+		.thclass {
+			background-color: purple;
+			color: white
+		}
+
+		.tdclass {
+			border: solid 1px purple
+		}
+	</style>
+</head>
+
+<body>
+	<div id='app'>
+		<p class="router-link">
+			<!-- 使用 router-link 组件来导航. -->
+			<!-- 通过传入 `to` 属性指定链接. -->
+			<!-- <router-link> 默认会被渲染成一个 `<a>` 标签 -->
+			<router-link to="/MyProject">MyProject</router-link>
+		</p>
+		<!-- 路由出口 -->
+		<!-- 路由匹配到的组件将渲染在这里 -->
+		<router-view></router-view>
+	</div>
+</body>
+
+</html>

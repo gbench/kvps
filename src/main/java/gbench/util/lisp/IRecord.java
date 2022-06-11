@@ -1170,6 +1170,15 @@ public interface IRecord extends Comparable<IRecord> {
     }
 
     /**
+     * 转换成 tuple2 的 列表结构
+     * 
+     * @return tuple的 列表结构 [(k,v)]
+     */
+    default List<Tuple2<String, Object>> tuples() {
+        return this.tupleS().collect(Collectors.toList());
+    }
+
+    /**
      * 转换成 tuple2 的 流式结构
      * 
      * @return tuple的流结构 [(k,v)]

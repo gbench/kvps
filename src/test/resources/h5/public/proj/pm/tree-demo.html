@@ -1,0 +1,59 @@
+<meta charset="utf-8">
+<title>TreeChart demo</title>
+<script src="../../js/vue.js"></script>
+<script src="../../js/TreeChart.umd.min.js"></script>
+
+
+<div id="app">
+  <demo :json="treeData"></demo>
+</div>
+
+<script>
+  new Vue({
+    components: {
+      demo: TreeChart
+    },
+    data() {
+      return {
+        message: "Orgnization",
+        treeData: {
+          name: 'root',
+          image_url: "images/folder.jpg",
+          class: ["rootNode"],
+          children: [
+            {
+              name: 'children1',
+              image_url: "images/folder.jpg"
+            },
+            {
+              name: 'children2',
+              image_url: "images/folder.jpg",
+              mate: {
+                name: 'mate',
+                image_url: "images/folder.jpg"
+              },
+              children: [
+                {
+                  name: 'grandchild',
+                  image_url: "images/folder.jpg"
+                },
+                {
+                  name: 'grandchild2',
+                  image_url: "images/folder.jpg"
+                },
+                {
+                  name: 'grandchild3',
+                  image_url: "images/folder.jpg"
+                }
+              ]
+            },
+            {
+              name: 'children3',
+              image_url: "images/folder.jpg"
+            }
+          ]
+        }
+      };
+    }
+  }).$mount('#app')
+</script>
