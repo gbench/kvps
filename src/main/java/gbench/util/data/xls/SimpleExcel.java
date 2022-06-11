@@ -75,7 +75,7 @@ public class SimpleExcel implements AutoCloseable {
      */
     public SimpleExcel(final InputStream inputStream, final String extension) {
         if (extension == null || !extension.trim().toLowerCase().startsWith("xls")) {
-            System.out.println("扩展名不正确，为null 或是 没有以xls开头");
+            println("扩展名不正确，为null 或是 没有以xls开头");
         }
         this.loadWithExtension(inputStream, extension);
     }
@@ -208,7 +208,7 @@ public class SimpleExcel implements AutoCloseable {
         }
         if (c1 == Integer.MAX_VALUE || c2 == Integer.MAX_VALUE)
             return null;
-        // System.out.println("lt:"+c1+","+c2);
+        // println("lt:"+c1+","+c2);
         return new Tuple2<>(c1, c2);
     }
 
@@ -256,10 +256,10 @@ public class SimpleExcel implements AutoCloseable {
         final Tuple2<Integer, Integer> lt = this.lt(sht, firstRowIndex, maxSize);
         final Tuple2<Integer, Integer> rb = this.rb(sht, firstRowIndex, maxSize);
         final String rangeName = ltrb2rngname(lt, rb);// 转换成rangename
-        // System.out.println(rangeName);
+        // println(rangeName);
         return this.range(sht, parse(rangeName));
     }
-    
+
     /**
      * 自动定位数据位置<br>
      * 读取指定sht 的最大可用状态
@@ -297,7 +297,7 @@ public class SimpleExcel implements AutoCloseable {
     public StrMatrix autoDetect(final String sheetname, final Integer firstRowIndex, final Integer maxSize) {
         final int shtid = this.sheetname2shtid(sheetname);
         if (shtid < 0) {
-            System.out.println(sheetname + " sheet,不存在！");
+            println(sheetname + " sheet,不存在！");
             return null;
         } // if
         return autoDetect(this.sheet(shtid), firstRowIndex, maxSize);
@@ -410,8 +410,7 @@ public class SimpleExcel implements AutoCloseable {
      * @param mapper  值变换函数 row->u
      * @return U类型的数据流
      */
-    public <U> Stream<U> autoDetectS(final String shtname,
-            final Function<LinkedHashMap<String, String>, U> mapper) {
+    public <U> Stream<U> autoDetectS(final String shtname, final Function<LinkedHashMap<String, String>, U> mapper) {
         return this.autoDetect(shtname).mapByRow(mapper);
     }
 
@@ -436,7 +435,7 @@ public class SimpleExcel implements AutoCloseable {
      */
     public StrMatrix range(Sheet sht, RangeDef rangedef, List<String> hh) {
         if (rangedef == null) {
-            System.out.println("无法获得rangedef数据,rangedef 为空数据");
+            println("无法获得rangedef数据,rangedef 为空数据");
             return null;
         }
 
@@ -459,7 +458,7 @@ public class SimpleExcel implements AutoCloseable {
         final List<String> headers = cc.keys();
         return new StrMatrix(cells, headers);
     }
-    
+
     /**
      * 名称转id
      * 
@@ -488,7 +487,8 @@ public class SimpleExcel implements AutoCloseable {
      * @param mapper    数据变换操作: o->t 完成 aij->bij的变换
      * @return 新数据矩阵
      */
-    public <T> DataMatrix<T> evaluate(Sheet sht, String rangeName, List<String> hh, Function<Object, T> mapper) {
+    public <T> DataMatrix<T> evaluate(final Sheet sht, final String rangeName, final List<String> hh,
+            final Function<Object, T> mapper) {
         return this.evaluate(sht, parse(rangeName), hh, mapper);
 
     }
@@ -510,7 +510,7 @@ public class SimpleExcel implements AutoCloseable {
      * @param mapper    数据变换操作: o->t 完成 aij->bij的变换
      * @return 新数据矩阵
      */
-    public <T> DataMatrix<T> evaluate(Sheet sht, String rangeName, Function<Object, T> mapper) {
+    public <T> DataMatrix<T> evaluate(final Sheet sht, final String rangeName, final Function<Object, T> mapper) {
         return this.evaluate(sht, parse(rangeName), null, mapper);
     }
 
@@ -531,7 +531,7 @@ public class SimpleExcel implements AutoCloseable {
      * @param mapper 数据变换操作: o->t 完成 aij->bij的变换
      * @return 重新计算后的新的数据矩阵
      */
-    public <T> DataMatrix<T> evaluate(String name, List<String> hh, Function<Object, T> mapper) {
+    public <T> DataMatrix<T> evaluate(final String name, final List<String> hh, final Function<Object, T> mapper) {
         String names[] = name.split("[!]+");// 多个！视为一个
         Sheet sht = this.sheet(0);
         String rangeName = name;
@@ -559,7 +559,7 @@ public class SimpleExcel implements AutoCloseable {
      * @param mapper 数据变换操作: o->t 完成 aij->bij的变换
      * @return 重新计算后的新的数据矩阵
      */
-    public <T> DataMatrix<T> evaluate(String name, Function<Object, T> mapper) {
+    public <T> DataMatrix<T> evaluate(final String name, final Function<Object, T> mapper) {
         return this.evaluate(name, null, mapper);
     }
 
@@ -580,7 +580,8 @@ public class SimpleExcel implements AutoCloseable {
      * @param hh     null,表示数据中包含表头,第一行就是表头
      * @return 新数据矩阵
      */
-    public <T> DataMatrix<T> evaluate(Sheet sht, RangeDef rangedef, List<String> hh, Function<Object, T> mapper) {
+    public <T> DataMatrix<T> evaluate(final Sheet sht, final RangeDef rangedef, final List<String> hh,
+            final Function<Object, T> mapper) {
         return this.evaluate(sht, rangedef.x0(), rangedef.y0(), rangedef.x1(), rangedef.y1(), hh, mapper);
 
     }
@@ -614,7 +615,7 @@ public class SimpleExcel implements AutoCloseable {
             final List<String> _hh, final Function<Object, T> _mapper) {
 
         if (sht == null) {
-            System.out.println("指定的sheet为空,无法获得表单数据");
+            println("指定的sheet为空,无法获得表单数据");
             return null;
         }
 
@@ -628,7 +629,7 @@ public class SimpleExcel implements AutoCloseable {
         final Object[][] mm = new Object[(i1 - i0 + 1 - offset)][(j1 - j0 + 1)];
 
         if (mm.length <= 0 || mm[0] == null || mm[0].length <= 0) {
-            System.out.println("数据矩阵的行数为空，没有数据！");
+            println("数据矩阵的行数为空，没有数据！");
             return null;
         }
 
@@ -648,9 +649,8 @@ public class SimpleExcel implements AutoCloseable {
                         classes.add(value.getClass());
                 } catch (Exception e) {
                     e.printStackTrace();
-                    System.out.println(
-                            "error on (" + i + "," + j + ")," + (sht.getRow(i) == null ? "行对象:'" + sht.getRow(i) + "为空"
-                                    : "行对象或者cell单元格异常,请指定有效的EXCEL数据范围（或是EXCEL自行判断的数据范围有错误）！"));
+                    println("error on (" + i + "," + j + ")," + (sht.getRow(i) == null ? "行对象:'" + sht.getRow(i) + "为空"
+                            : "行对象或者cell单元格异常,请指定有效的EXCEL数据范围（或是EXCEL自行判断的数据范围有错误）！"));
                 } // try
             } // for j
         } // for i
@@ -675,13 +675,14 @@ public class SimpleExcel implements AutoCloseable {
         if (classes.size() > 0) {
             cls = classes.iterator().next();
             if (classes.size() > 1) {
-                System.out.println("warnnings:矩阵中出现不同类别:" + classes + ",取用类别:" + classes.iterator().next());
+                println("warnnings:矩阵中出现不同类别:" + classes + ",取用类别:" + classes.iterator().next());
             } // if
         } // if
 
-        final int m = mm.length;
-        final int n = mm[0].length;// 表列宽度
-        final T[][] tt = (T[][]) Array.newInstance((Class<T>) cls, mm.length, mm[0].length);
+        final int m = mm.length; // 行数
+        final int n = mm[0].length;// 表列宽度，列数
+        final T[][] tt = (T[][]) Array.newInstance((Class<T>) cls, mm.length, mm[0].length); // 数据矩阵
+
         for (int i = 0; i < m; i++) {
             for (int j = 0; j < n; j++) {
                 try {
@@ -703,8 +704,9 @@ public class SimpleExcel implements AutoCloseable {
      */
     public Object evaluate(final Cell cell) {
         Object value = null;
-        if (cell == null)
+        if (cell == null) {
             return null;
+        }
 
         final Function<Cell, String> strcell = c -> { // 元素值的字符串
             final CellStyle style = c.getCellStyle();
@@ -713,53 +715,58 @@ public class SimpleExcel implements AutoCloseable {
         };
 
         final CellType cellType = cell.getCellType();
+
         if (cellType == CellType.STRING) { // 字符串类型
             value = strcell.apply(cell);
         } else if (cellType == CellType.NUMERIC) { // 数值类型
             if (DateUtil.isCellDateFormatted(cell)) {
                 final Date date = cell.getDateCellValue();
                 value = sdf.format(date);
-            } else {
+            } else { //
                 final Double dbl = cell.getNumericCellValue();
                 value = dbl;
-            }
+            } // if
         } else if (cellType == CellType.FORMULA) { // 公式处理
             CellValue vv = null; // 公式的值
+
             try {
                 vv = evaluator.evaluate(cell);// 计算单元格的数值
             } catch (Exception e) {
                 // e.printStackTrace();
                 value = String.valueOf(cell.getRichStringCellValue());
                 return value;
-            }
+            } // try
+
             try {
                 if (DateUtil.isCellDateFormatted(cell)) {// 日期值处理
-                    Date date = cell.getDateCellValue();
+                    final Date date = cell.getDateCellValue();
                     value = sdf.format(date);
-                } else if (vv.getCellType() == CellType.NUMERIC) {
+                } else if (vv.getCellType() == CellType.NUMERIC) { // 数值类型
                     value = vv.getNumberValue();
-                } else if (vv.getCellType() == CellType.BOOLEAN) {
-                    value = vv.getBooleanValue();
-                } else if (vv.getCellType() == CellType.ERROR) {
+                } else if (vv.getCellType() == CellType.BOOLEAN) { // BOOL 类型
+                } else if (vv.getCellType() == CellType.ERROR) { // 错误类型
                     value = vv.getErrorValue();
-                } else {
+                } else { // default 默认类型
                     value = vv.getStringValue();
                 } // 值类型的处理
+
             } catch (IllegalStateException e) { // 默认采用时间格式
                 value = strcell.apply(cell);
-            }
+            } // try
+
         } else if (cellType == CellType.NUMERIC) {// 数值得处理
-            if (DateUtil.isCellDateFormatted(cell))
+            if (DateUtil.isCellDateFormatted(cell)) {
                 value = sdf.format(cell.getDateCellValue());
-            else
+            } else {
                 value = cell.getNumericCellValue();
+            }
         } else if (cellType == CellType.BOOLEAN) {// 布尔值得处理
             value = cell.getBooleanCellValue();
-        } else {
+        } else { // 默认值类型
             // do nothin so value == null
         }
 
-        // System.out.println(value);
+        // println(value);
         return value;
     }
 
@@ -774,8 +781,10 @@ public class SimpleExcel implements AutoCloseable {
 
         final List<Sheet> shts = sheets();// 获取表单列表
         for (int i = 0; i < sheets().size(); i++) {
-            if (shts.get(i) == null)
+            if (shts.get(i) == null) {
                 continue;
+            }
+
             String shtname = shts.get(i).getSheetName();
             if (shtname != null && shtname.equals(name)) {
                 shtid = i;
@@ -804,20 +813,24 @@ public class SimpleExcel implements AutoCloseable {
      * @param sht 当前的表单
      */
     public String strval(final Sheet sht, final int i, final int j) {
-        if (i < 0 || j < 0)
+        if (i < 0 || j < 0) {
             return null;
+        }
 
         if (sht == null) {
-            System.out.println("未指定表单,sht==null");
+            println("未指定表单,sht==null");
             return null;
         }
 
         Row row = sht.getRow(i);
-        if (row == null)
+        if (row == null) {
             return "";
-        Cell cell = row.getCell(j);
-        if (cell == null)
+        }
+
+        final Cell cell = row.getCell(j);
+        if (cell == null) {
             return "";
+        }
 
         return format(cell);
     }
@@ -845,7 +858,8 @@ public class SimpleExcel implements AutoCloseable {
      */
     public Stream<Sheet> sheetS() {
         // 遍历workbook获取sheet 列表
-        Spliterator<Sheet> splitr = Spliterators.spliteratorUnknownSize(workbook.sheetIterator(), Spliterator.ORDERED);
+        final Spliterator<Sheet> splitr = Spliterators.spliteratorUnknownSize(workbook.sheetIterator(),
+                Spliterator.ORDERED);
         return StreamSupport.stream(splitr, false);
     }
 
@@ -866,7 +880,7 @@ public class SimpleExcel implements AutoCloseable {
      * @return SimpleExcel 对象本身 以实现链式编程
      */
     public SimpleExcel saveAs(File file) {
-        try (FileOutputStream fos = new FileOutputStream(file, file.exists())) {
+        try (final FileOutputStream fos = new FileOutputStream(file, file.exists())) {
             this.workbook.write(fos);
         } catch (Exception e) {
             e.printStackTrace();
@@ -918,25 +932,28 @@ public class SimpleExcel implements AutoCloseable {
      * @return 名称转rangedef
      */
     public static RangeDef parse(final String rangeName) {
-        String pattern = "(([A-Z]+)\\s*(\\d+))(\\s*:\\s*(([A-Z]+)\\s*(\\d+)))?";
-        if (rangeName == null)
+        final String pattern = "(([A-Z]+)\\s*(\\d+))(\\s*:\\s*(([A-Z]+)\\s*(\\d+)))?";
+        if (rangeName == null) {
             return null;
-        String name = rangeName.toUpperCase(); // 转换成大写形式
-        Matcher matcher = Pattern.compile(pattern).matcher(name);
-    
+        }
+
+        final String name = rangeName.toUpperCase(); // 转换成大写形式
+        final Matcher matcher = Pattern.compile(pattern).matcher(name);
+
         RangeDef rangedef = null;// 数值区域
         if (matcher.find()) {
-            String y0 = matcher.group(2).replaceAll("\\s*", "");
-            String x0 = matcher.group(3).replaceAll("\\s*", "");
-            String y1 = matcher.group(6).replaceAll("\\s*", "");
-            String x1 = matcher.group(7).replaceAll("\\s*", "");
-            Integer ix0 = DataMatrix.excel_name_to_index(x0);
-            Integer iy0 = DataMatrix.excel_name_to_index(y0);
-            Integer ix1 = DataMatrix.excel_name_to_index(x1);
-            Integer iy1 = DataMatrix.excel_name_to_index(y1);
+            final String y0 = matcher.group(2).replaceAll("\\s*", "");
+            final String x0 = matcher.group(3).replaceAll("\\s*", "");
+            final String y1 = matcher.group(6).replaceAll("\\s*", "");
+            final String x1 = matcher.group(7).replaceAll("\\s*", "");
+            final Integer ix0 = DataMatrix.excel_name_to_index(x0);
+            final Integer iy0 = DataMatrix.excel_name_to_index(y0);
+            final Integer ix1 = DataMatrix.excel_name_to_index(x1);
+            final Integer iy1 = DataMatrix.excel_name_to_index(y1);
+
             rangedef = new RangeDef(ix0, iy0, ix1, iy1);
         } // if
-    
+
         return rangedef; // 数据区域内容
     }
 
@@ -948,8 +965,10 @@ public class SimpleExcel implements AutoCloseable {
      * @return range 的名称
      */
     public static String ltrb2rngname(final Tuple2<Integer, Integer> lt, final Tuple2<Integer, Integer> rb) {
-        if (lt == null || rb == null)
+        if (lt == null || rb == null) {
             return null;
+        }
+
         final Tuple2<Integer, Integer> _lt = lt.map1(e -> e + 1);
         final Tuple2<Integer, Integer> _rb = rb.map1(e -> e + 1);
         final String ltaddr = tuple2address(_lt);
@@ -968,6 +987,7 @@ public class SimpleExcel implements AutoCloseable {
     }
 
     /**
+     * SimpleExcel 生成器
      * 
      * @param file excel 文件对象
      * @return SimpleExcel
@@ -977,12 +997,25 @@ public class SimpleExcel implements AutoCloseable {
     }
 
     /**
+     * SimpleExcel 生成器
      * 
      * @param path excel 文件路径的绝对路径
      * @return SimpleExcel
      */
     public static SimpleExcel of(final String path) {
         return SimpleExcel.of(new File(path));
+    }
+
+    /**
+     * 格式化输出
+     * 
+     * @param objs 数据列表
+     * @return 格式化输出
+     */
+    public static String println(final Object... objs) {
+        final String line = Stream.of(objs).map(e -> e + "").collect(Collectors.joining("\n"));
+        System.out.println(line);
+        return line;
     }
 
     public static final Integer MAX_SIZE = 1000000;// 最大处理行数
