@@ -1,21 +1,23 @@
 package gbench.util.json.jackson;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Function;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import gbench.util.lisp.IRecord;
 
 /**
  * IRecord 反序列化 <br>
+ * 
  * @author gbench
  *
  */
@@ -39,17 +41,54 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
      */
     public static IRecord objnode2rec(final ObjectNode node) {
         final Map<String, Object> mm = new LinkedHashMap<>();
-        node.fieldNames().forEachRemaining(name -> mm.put(name, node.get(name)));
+        node.fieldNames().forEachRemaining(name -> {
+            final JsonNode jsnode = node.get(name);
+            final Object value = jsnode2value(jsnode);
+            mm.put(name, value);
+        });
         return IRecord.REC(mm);
     }
 
     /**
-     * 单层节点转换的ObjectNode变为IRecord
+     * 把 jsnode 转换成值类型 jsnode2value
      * 
-     * @param node 节点
-     * @return
+     * @param jsnode JsonNode 类型的数据
+     * @return 值对象
      */
-    public static Function<ObjectNode, IRecord> node2rec = IRecordDeserializer::objnode2rec;
+    public static Object jsnode2value(final JsonNode jsnode) {
+
+        Object value = jsnode;
+
+        if (jsnode instanceof ObjectNode) {
+            final ObjectNode objnode = (ObjectNode) jsnode;
+            value = objnode2rec(objnode);
+        } else if (jsnode instanceof ArrayNode) {
+            final ArrayNode arrNode = (ArrayNode) jsnode;
+            final ArrayList<Object> aa = new ArrayList<Object>(); // 数组容器
+            arrNode.forEach(e -> {
+                final Object obj = jsnode2value(e);
+                aa.add(obj);
+            }); // forEach
+            value = aa;
+        } else { // 基础类型
+            if (jsnode.isTextual()) {
+                value = jsnode.asText();
+            } else if (jsnode.isDouble()) {
+                value = jsnode.asDouble();
+            } else if (jsnode.isInt()) {
+                value = jsnode.asInt();
+            } else if (jsnode.isBoolean()) {
+                value = jsnode.asBoolean();
+            } else if (jsnode.isFloat()) {
+                value = jsnode.asDouble();
+            } else if (jsnode.isLong()) {
+                value = jsnode.asLong();
+            } else {
+                value = jsnode;
+            } //
+        } // if
+        return value;
+    }
 
     @Override
     public IRecord deserialize(final JsonParser jp, final DeserializationContext ctxt)
@@ -58,26 +97,9 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
         final JsonNode node = jp.getCodec().readTree(jp);
         final Map<String, Object> mm = new LinkedHashMap<>();
         node.fieldNames().forEachRemaining(name -> {
-            final JsonNode jsn = node.get(name);
-            if (jsn.isObject()) {
-                mm.put(name, objnode2rec((ObjectNode) node.get(name)));
-            } else {
-                Object value = jsn;
-                if (jsn.isTextual()) {
-                    value = jsn.asText();
-                } else if (jsn.isDouble()) {
-                    value = jsn.asDouble();
-                } else if (jsn.isInt()) {
-                    value = jsn.asInt();
-                } else if (jsn.isBoolean()) {
-                    value = jsn.asBoolean();
-                } else if (jsn.isFloat()) {
-                    value = jsn.asDouble();
-                } else if (jsn.isLong()) {
-                    value = jsn.asLong();
-                } // if
-                mm.put(name, value);
-            } // if
+            final JsonNode jsnode = node.get(name);
+            final Object value = jsnode2value(jsnode);
+            mm.put(name, value);
         }); // if forEachRemaining
 
         return IRecord.REC(mm);
