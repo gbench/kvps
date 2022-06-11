@@ -42,13 +42,13 @@ public abstract class AbstractDeserializer<T> extends StdDeserializer<T> {
      * @return IRecord 对象
      */
     public T objnode2t(final ObjectNode node) {
-        final Map<String, Object> mm = new LinkedHashMap<>();
+        final Map<String, Object> data = new LinkedHashMap<>();
         node.fieldNames().forEachRemaining(name -> {
             final JsonNode jsnode = node.get(name);
             final Object value = jsnode2value(jsnode);
-            mm.put(name, value);
+            data.put(name, value);
         });
-        return this.create(mm);
+        return this.create(data);
     }
 
     /**
