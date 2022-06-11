@@ -1,6 +1,7 @@
 package gbench.sandbox.weihai;
 
 import static gbench.util.io.Output.println;
+import static gbench.util.lisp.DFrame.dfmclc;
 import static gbench.util.lisp.IRecord.FT;
 import static gbench.util.lisp.IRecord.REC;
 
@@ -15,6 +16,7 @@ import org.springframework.jdbc.datasource.*;
 import org.junit.jupiter.api.Test;
 
 import gbench.util.data.DataApp;
+import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
 
 /**
@@ -42,7 +44,7 @@ public class DataJunit {
             e.printStackTrace();
         }
         dataSource.setUsername(rec.str("user"));
-        dataSource.setPassword(rec.str("passowrd"));
+        dataSource.setPassword(rec.str("password"));
         return dataSource;
     }
 
@@ -80,7 +82,34 @@ public class DataJunit {
         Stream.of("t_user", "T_USER").forEach(e -> {
             println(e, dataMain.tblExists(e));
         });
-        
+
+    }
+
+    @Test
+    public void bar() {
+        final DataSource ds = ds(REC( //
+                "url", "jdbc:mysql://localhost:3306/activitidb", //
+                "driver", "com.mysql.cj.jdbc.Driver", //
+                "user", "root", "password", "123456"));
+        final DataApp dataMain = new DataApp(ds);
+        dataMain.withTransaction(sess -> {
+            final DFrame dfm = sess.sql2recordS("show tables").collect(DFrame.dfmclc(IRecord::REC));
+            println(dfm);
+        });
+    }
+
+    @Test
+    public void qux() {
+        final DataSource ds = ds(REC( //
+                "url", "jdbc:mysql://211.159.215.251:60302/itsm_whbank", //
+                "driver", "com.mysql.cj.jdbc.Driver", //
+                "user", "root"));
+        final DataApp dataMain = new DataApp(ds);
+        dataMain.withTransaction(sess -> {
+            final String sql = "select * from itsm_sys_user";
+            final DFrame dfm = sess.sql2recordS(sql).collect(dfmclc(IRecord::REC));
+            println(dfm);
+        });
     }
 
 }
