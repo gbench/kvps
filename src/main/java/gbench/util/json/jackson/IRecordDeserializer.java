@@ -71,18 +71,38 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
             }); // forEach
             value = aa;
         } else { // 基础类型
-            if (jsnode.isTextual()) {
+            if (jsnode.isTextual()) { // 文本
                 value = jsnode.asText();
-            } else if (jsnode.isDouble()) {
-                value = jsnode.asDouble();
-            } else if (jsnode.isInt()) {
-                value = jsnode.asInt();
-            } else if (jsnode.isBoolean()) {
+            } else if (jsnode.isBoolean()) { // BOOL类型
                 value = jsnode.asBoolean();
-            } else if (jsnode.isFloat()) {
+            } else if (jsnode.isInt()) { // 整形
+                value = jsnode.asInt();
+            } else if (jsnode.isBigInteger()) { // 空值
+                value = jsnode.bigIntegerValue();
+            } else if (jsnode.isIntegralNumber()) { // 整形数值
+                value = jsnode.asInt();
+            } else if (jsnode.isFloat()) { // 浮点数
+                value = jsnode.floatValue();
+            } else if (jsnode.isFloatingPointNumber()) { // 浮点数
+                value = jsnode.doubleValue();
+            } else if (jsnode.isDouble()) { // 双精度
                 value = jsnode.asDouble();
-            } else if (jsnode.isLong()) {
+            } else if (jsnode.isLong()) { // 长整型
                 value = jsnode.asLong();
+            } else if (jsnode.isBinary()) { // 二进制类型
+                try {
+                    value = jsnode.binaryValue();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } // try
+            } else if (jsnode.isBigDecimal()) { // 大数字
+                value = jsnode.decimalValue(); //
+            } else if (jsnode.isNumber()) { // 数字类型
+                value = jsnode.numberValue(); //
+            } else if (jsnode.isEmpty()) { // 空值
+                value = IRecord.REC("name","-"); //
+            } else if (jsnode.isNull()) { // 空值类型
+                value = null; //
             } else {
                 value = jsnode;
             } //

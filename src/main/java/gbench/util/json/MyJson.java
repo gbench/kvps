@@ -1,9 +1,19 @@
 package gbench.util.json;
 
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ser.std.DateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 
 import gbench.util.lisp.IRecord;
 import gbench.util.json.jackson.IRecordModule;
@@ -41,7 +51,21 @@ public class MyJson {
      * @return ObjectMapper
      */
     public static ObjectMapper recM() {
-        return of(new IRecordModule());
+        
+        // 日期序列化设置
+        final JavaTimeModule javaTimeModule = new JavaTimeModule();
+        javaTimeModule.addSerializer(Date.class,
+                new DateSerializer(false, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")));
+        javaTimeModule.addSerializer(LocalDateTime.class,
+                new LocalDateTimeSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+        javaTimeModule.addSerializer(LocalDate.class,
+                new LocalDateSerializer(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        javaTimeModule.addSerializer(LocalTime.class, new LocalTimeSerializer(DateTimeFormatter.ofPattern("HH:mm:ss")));
+
+        // IRecord 序列化设置
+        final IRecordModule recModule = new IRecordModule();
+        
+        return of(recModule, javaTimeModule);
     }
 
     /**
