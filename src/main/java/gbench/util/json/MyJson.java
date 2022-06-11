@@ -9,6 +9,7 @@ import gbench.util.lisp.IRecord;
 import gbench.util.json.jackson.IRecordModule;
 
 /**
+ * Json 工具类
  * 
  * @author xuqinghua
  *
@@ -44,11 +45,12 @@ public class MyJson {
     }
 
     /**
+     * 生成 json 字符串
      * 
-     * @param obj
-     * @return
+     * @param obj 目标对象
+     * @return 生成 json 字符串
      */
-    public static String toJson(Object obj) {
+    public static String toJson(final Object obj) {
         try {
             return recM().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
@@ -58,11 +60,12 @@ public class MyJson {
     }
 
     /**
+     * 返回美化后的json字符串
      * 
-     * @param obj
-     * @return
+     * @param obj 目标对象
+     * @return 美化后的json字符串
      */
-    public static String pretty(Object obj) {
+    public static String pretty(final Object obj) {
         try {
             return MyJson.recM().writerWithDefaultPrettyPrinter().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
@@ -71,13 +74,21 @@ public class MyJson {
         }
     }
 
+    /**
+     * 把json字符串转成IRecord 对象
+     * 
+     * @param json json字符串转
+     * @return IRecord 对象
+     */
     public static IRecord fromJson(final String json) {
         IRecord rec = null;
+
         try {
             rec = recM().readValue(json, IRecord.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+
         return rec;
     }
 
