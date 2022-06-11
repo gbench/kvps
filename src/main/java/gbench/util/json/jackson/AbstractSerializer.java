@@ -40,9 +40,13 @@ public abstract class AbstractSerializer<T> extends StdSerializer<T> {
     public void serialize(final T value, final JsonGenerator generator, final SerializerProvider provider)
             throws IOException {
         generator.writeStartObject();
-        for (Map.Entry<String, Object> e : this.dataOf(value).entrySet()) {
-            generator.writeObjectField(e.getKey(), e.getValue());
-        }
+
+        final Map<String, Object> data = this.dataOf(value); // 提取数据
+        if (data != null) {
+            for (final Map.Entry<String, Object> e : data.entrySet()) {
+                generator.writeObjectField(e.getKey(), e.getValue());
+            } // for
+        } // if
 
         generator.writeEndObject();
     }
