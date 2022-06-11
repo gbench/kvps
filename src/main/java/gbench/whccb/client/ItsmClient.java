@@ -25,7 +25,9 @@ import gbench.whccb.client.util.Base64Util;
  * ItsmClient 客户端 示例 <br>
  * 
  * url: https://whbank.gazellio.com/apiIndex <br>
- * 快速查询: 1.45.56 用户登录 username: sys_admin <br>
+ * 快速查询: 1.45.56 <br>
+ * 用户登录 <br>
+ * username: sys_admin <br>
  * password: super123456 <br>
  * 
  * @author gbench
