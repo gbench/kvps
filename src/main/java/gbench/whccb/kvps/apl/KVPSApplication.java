@@ -15,7 +15,6 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @ComponentScan(basePackages = { //
         "gbench.whccb.kvps.controller", //
-        "gbench.whccb.kvps.controller.iam", //
         "gbench.whccb.kvps.model", //
         "gbench.whccb.kvps.config" })
 @SpringBootApplication
