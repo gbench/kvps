@@ -51,7 +51,7 @@ public class MyJson {
      * @return ObjectMapper
      */
     public static ObjectMapper recM() {
-        
+
         // 日期序列化设置
         final JavaTimeModule javaTimeModule = new JavaTimeModule();
         javaTimeModule.addSerializer(Date.class,
@@ -64,7 +64,7 @@ public class MyJson {
 
         // IRecord 序列化设置
         final IRecordModule recModule = new IRecordModule();
-        
+
         return of(recModule, javaTimeModule);
     }
 
