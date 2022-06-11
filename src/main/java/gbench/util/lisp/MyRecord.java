@@ -8,13 +8,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
+import gbench.util.json.MyJson;
 
 /**
  * 数据记录对象的实现
@@ -25,7 +28,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 public class MyRecord implements IRecord, Serializable {
 
     /**
-     * 
+     * 序列号
      */
     private static final long serialVersionUID = 1L;
 
@@ -112,26 +115,26 @@ public class MyRecord implements IRecord, Serializable {
      * @return IRecord
      */
     public static IRecord fromJson(final String json) {
-        final ObjectMapper objM = new ObjectMapper();
         IRecord rec = null;
+
         try {
-            rec = IRecord.REC(objM.readValue(json, Map.class));
+            rec = objM.readValue(json, IRecord.class);
+        } catch (JsonMappingException e) {
+            e.printStackTrace();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            System.err.println("error json:\n" + json);
         }
+
         return rec;
     }
 
     /**
      * 转换成 json 格式
      * 
-     * @param obj
-     * @return
+     * @param obj 值对象
+     * @return json 字符串
      */
     public static String toJson(final Object obj) {
-        final ObjectMapper objM = new ObjectMapper();
-        objM.registerModule(new JavaTimeModule());
         String json = null;
         try {
             json = objM.writeValueAsString(obj);
@@ -169,24 +172,33 @@ public class MyRecord implements IRecord, Serializable {
     public static <T> IRecord REC(final T... kvs) {
         final int n = kvs.length;
         final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
-        final Consumer<Tuple2<String, ?>> put_tuple = tup -> {
+        final Consumer<Tuple2<String, ?>> put_tuple = tup -> { // 元组处理
             data.put(tup._1, tup._2);
         };
-        final Consumer<Stream<Object>> put_stream = stream -> {
-            stream.map(Tuple2.snb(0)).map(t -> {
-                Tuple2<?, ?> tup = (Tuple2<?, ?>) (t._2 instanceof Tuple2 ? t._2 : t);
-                return tup.map1(Object::toString);
-            }).forEach(put_tuple);
-        };
+        final Consumer<Stream<Object>> put_stream = stream -> { // 数据流的处理
+            stream.map(Tuple2.snb(0)).map(tuple -> {
+                return Optional.ofNullable(tuple._2).map(e -> {
+                    if (e instanceof Tuple2) { // Tuple2
+                        return (Tuple2<?, ?>) e;
+                    } else if (e instanceof Map.Entry) { // Entry
+                        Map.Entry<?, ?> me = (Map.Entry<?, ?>) tuple._2;
+                        return Tuple2.of(me.getKey(), me.getValue());
+                    } else { // default
+                        return tuple;
+                    } // if
+                }).map(e -> e.map1(Object::toString)).orElse(null);
+            }).filter(Objects::nonNull).forEach(put_tuple); //
+        }; // put_stream
         final Consumer<Iterable<Object>> put_iterable = iterable -> {
             put_stream.accept(StreamSupport.stream(iterable.spliterator(), false));
-        };
+        }; // put_iterable
 
         if (n == 1) { // 单一参数情况
             final T obj = kvs[0];
             if (obj instanceof Map) { // Map情况的数据处理
                 ((Map<?, ?>) obj).forEach((k, v) -> { // 键值的处理
-                    data.put(k + "", v);
+                    final String key = k instanceof String ? (String) k : k + "";
+                    data.put(key, v);
                 }); // forEach
             } else if (obj instanceof IRecord) {// IRecord 对象类型 复制对象数据
                 data.putAll(((IRecord) obj).toMap());
@@ -222,4 +234,6 @@ public class MyRecord implements IRecord, Serializable {
     }
 
     private LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+
+    private static ObjectMapper objM = MyJson.recM();
 }

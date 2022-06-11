@@ -1,14 +1,8 @@
 package gbench.util.json.jackson;
 
-import java.io.IOException;
-
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import java.util.Map;
 
 import gbench.util.lisp.IRecord;
-import gbench.util.lisp.Tuple2;
 
 /**
  * IRecord 序列化
@@ -16,7 +10,7 @@ import gbench.util.lisp.Tuple2;
  * @author gbench
  *
  */
-public class IRecordSerializer extends StdSerializer<IRecord> {
+public class IRecordSerializer extends AbstractSerializer<IRecord> {
 
     private static final long serialVersionUID = -6713069486531158400L;
 
@@ -29,19 +23,8 @@ public class IRecordSerializer extends StdSerializer<IRecord> {
     }
 
     @Override
-    public void serializeWithType(final IRecord value, final JsonGenerator generator, final SerializerProvider provider,
-            final TypeSerializer typeSer) throws IOException {
-        this.serialize(value, generator, provider);
-    }
-
-    @Override
-    public void serialize(final IRecord value, final JsonGenerator generator, final SerializerProvider provider)
-            throws IOException {
-        generator.writeStartObject();
-        for (final Tuple2<String, Object> kvp : value.tuples()) {
-            generator.writeObjectField(kvp._1, kvp._2);
-        }
-        generator.writeEndObject();
+    public Map<String, Object> dataOf(final IRecord t) {
+        return t.toMap();
     }
 
 }

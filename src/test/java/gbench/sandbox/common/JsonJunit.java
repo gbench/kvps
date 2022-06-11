@@ -57,10 +57,12 @@ public class JsonJunit {
 
     @Test
     public void bar() {
+        println(IRecord.REC(Arrays.asList(1, 2, 3, 4, LocalDateTime.now())).json());
         println(IRecord.REC(Arrays.asList(1, 2, 3, 4)));
         println(IRecord.REC(Arrays.asList(1, 2, 3, 4).iterator()));
         println(IRecord.REC(Stream.of(1, 2, 3, 4)));
         println(IRecord.REC(REC("name", "zhangsan", "sex", true).tuples()));
+        println(IRecord.REC(REC("name", "zhangsan", "sex", true).toMap().entrySet().iterator()));
     }
 
 }
