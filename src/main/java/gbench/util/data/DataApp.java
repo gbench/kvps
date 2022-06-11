@@ -11,8 +11,16 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -221,40 +229,9 @@ public class DataApp {
         Map<String, Object> toMap();
 
         /**
-         * 构造 IRecord <br>
-         * 按照构建器的 键名序列表，依次把objs中的元素与其适配以生成 IRecord <br>
-         * {key0:objs[0],key1:objs[1],key2:objs[2],...}
-         * 
-         * @param <T>  元素类型
-         * @param objs 值序列, 若 objs 为 null 则返回null, <br>
-         *             若 objs 长度不足以匹配 keys 将采用 循环补位的仿制给予填充 <br>
-         *             若 objs 长度为0则返回一个空对象{},注意是没有元素且不是null的对象
-         * @return IRecord 对象 若 objs 为 null 则返回null
-         */
-        default public IRecord get(final Object... objs) {
-
-            if (objs == null) { // 空值判断
-                return null;
-            }
-
-            final int n = objs.length;
-            final List<String> keys = this.keys();
-            final int size = this.keys().size();
-            final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
-
-            for (int i = 0; n > 0 && i < size; i++) {
-                final String key = keys.get(i);
-                final Object value = objs[i % n];
-                data.put(key, value);
-            } // for
-
-            return this.build(data);
-        }
-
-        /**
          * 设置键，若 key 与 老的 键 相同则 覆盖 老的值
          * 
-         * @param key   新的 键名
+         * @param key   键名
          * @param value 键值
          * @return 对象本身
          */
@@ -262,6 +239,63 @@ public class DataApp {
 
             this.set(key, value);
             return this;
+        }
+
+        /**
+         * 把idx转key
+         * 
+         * @param idx 键名索引 从0开始
+         * @return 索引转键名
+         */
+        default String keyOf(final int idx) {
+
+            final List<String> kk = this.keys();
+            return idx < kk.size() ? kk.get(idx) : null;
+        }
+
+        /**
+         * 键名索引
+         * 
+         * @param key 键名
+         * @return 键名索引 从0开始, key 为null 时返回null
+         */
+        default Integer indexOf(final String key) {
+
+            if (key == null) {
+                return null;
+            }
+
+            final List<String> kk = this.keys();
+
+            for (int i = 0; i < kk.size(); i++) {
+                final String _key = kk.get(i);
+                if (key.equals(_key)) {
+                    return i;
+                }
+            }
+
+            return null;
+        }
+
+        /**
+         * 取键值
+         * 
+         * @param name 键名
+         * @return 键值Optional
+         */
+        default public Optional<Object> opt(final String name) {
+            return Optional.ofNullable(this.get(name));
+        }
+
+        /**
+         * 取键值
+         * 
+         * @param idx 键名索引从0开始
+         * @return 键值Optional
+         */
+        default public Optional<Object> opt(final Integer idx) {
+            final String key = this.keyOf(idx);
+            return Optional.ofNullable(this.get(key));
         }
 
         /**
@@ -305,6 +339,35 @@ public class DataApp {
             final Object obj = this.get(key);
 
             return Optional.ofNullable(IRecord.obj2dbl(null).apply(obj)).map(Number::intValue).orElse(null);
+        }
+
+        /**
+         * 返回 key 所对应的 键值, LocalDateTime 类型
+         * 
+         * @param key          键名
+         * @param defaultValue 默认值
+         * @return key 所标定的 值
+         */
+        default LocalDateTime ldt(final String key, final LocalDateTime defaultValue) {
+            final Object value = this.get(key);
+
+            if (value == null) { // 空结构
+                return defaultValue;
+            } else { // 非空值
+                final LocalDateTime ldt = IRecord.asLocalDateTime(value);
+                return Optional.ofNullable(ldt).orElse(defaultValue);
+            } // if
+        }
+
+        /**
+         * 返回 key 所对应的 键值, LocalDateTime 类型
+         * 
+         * @param key          键名
+         * @param defaultValue 默认值
+         * @return key 所标定的 值
+         */
+        default LocalDateTime ldt(final String key) {
+            return this.ldt(key, null);
         }
 
         /*
@@ -519,6 +582,131 @@ public class DataApp {
 
                 return dbl;
             };
+        }
+
+        /**
+         * 把一个值对象转换成LocalDateTime
+         * 
+         * @param value 值对象
+         * @return LocalDateTime
+         */
+        static LocalDateTime asLocalDateTime(final Object value) {
+            final Function<LocalDate, LocalDateTime> ld2ldt = ld -> LocalDateTime.of(ld, LocalTime.of(0, 0));
+            final Function<LocalTime, LocalDateTime> lt2ldt = lt -> LocalDateTime.of(LocalDate.of(0, 1, 1), lt);
+            final Function<Long, LocalDateTime> lng2ldt = lng -> {
+                final Long timestamp = lng;
+                final Instant instant = Instant.ofEpochMilli(timestamp);
+                final ZoneId zoneId = ZoneId.systemDefault();
+                return LocalDateTime.ofInstant(instant, zoneId);
+            };
+
+            final Function<Timestamp, LocalDateTime> timestamp2ldt = timestamp -> {
+                return lng2ldt.apply(timestamp.getTime());
+            };
+
+            final Function<Date, LocalDateTime> dt2ldt = dt -> {
+                return lng2ldt.apply(dt.getTime());
+            };
+
+            final Function<String, LocalTime> str2lt = line -> {
+                LocalTime lt = null;
+                for (String format : "HH:mm:ss,HH:mm,HHmmss,HHmm,HH".split("[,]+")) {
+                    try {
+                        lt = LocalTime.parse(line, DateTimeFormatter.ofPattern(format));
+                    } catch (Exception ex) {
+                        // do nothing
+                    }
+                    if (lt != null)
+                        break;
+                }
+                return lt;
+            };
+
+            final Function<String, LocalDate> str2ld = line -> {
+                LocalDate ld = null;
+                for (String format : "yyyy-MM-dd,yyyy-M-d,yyyy/MM/dd,yyyy/M/d,yyyyMMdd".split("[,]+")) {
+                    try {
+                        ld = LocalDate.parse(line, DateTimeFormatter.ofPattern(format));
+                    } catch (Exception ex) {
+                        // do nothing
+                    }
+                    if (ld != null)
+                        break;
+                }
+
+                return ld;
+            };
+
+            final Function<String, LocalDateTime> str2ldt = line -> {
+                LocalDateTime ldt = null;
+                final String patterns = "yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS," //
+                        + "yyyy-MM-dd'T'HH:mm:ss.SSSSSS," //
+                        + "yyyy-MM-dd'T'HH:mm:ss.SSS," //
+                        + "yyyy-MM-dd'T'HH:mm:ss," //
+                        + "yyyy-MM-ddTHH:mm:ss.SSSSSSSSS," //
+                        + "yyyy-MM-ddTHH:mm:ss.SSSSSS," //
+                        + "yyyy-MM-ddTHH:mm:ss.SSS," //
+                        + "yyyy-MM-ddTHH:mm:ss," //
+                        + "yyyy-MM-dd HH:mm:ss," //
+                        + "yyyy-MM-dd HH:mm," //
+                        + "yyyy-MM-dd HH," //
+                        + "yyyy-M-d H:m:s," //
+                        + "yyyy-M-d H:m," //
+                        + "yyyy-M-d H," //
+                        + "yyyy/MM/dd HH:mm:ss," //
+                        + "yyyy/MM/dd HH:mm," //
+                        + "yyyy/MM/dd HH," //
+                        + "yyyy/M/d H:m:s," //
+                        + "yyyy/M/d H:m," //
+                        + "yyyy/M/d H," //
+                        + "yyyyMMddHHmmss," //
+                        + "yyyyMMddHHmm," //
+                        + "yyyyMMddHH"//
+                ; // patterns 时间的格式字符串
+
+                for (String format : patterns.split("[,]+")) {
+                    try {
+                        ldt = LocalDateTime.parse(line, DateTimeFormatter.ofPattern(format));
+                    } catch (Exception ex) {
+                        // do nothing
+                    }
+                    if (ldt != null)
+                        break;
+                }
+
+                return ldt;
+            };
+
+            if (value instanceof LocalDateTime) {
+                return (LocalDateTime) value;
+            } else if (value instanceof LocalDate) {
+                return ld2ldt.apply((LocalDate) value);
+            } else if (value instanceof LocalTime) {
+                return lt2ldt.apply((LocalTime) value);
+            } else if (value instanceof Number) {
+                return lng2ldt.apply(((Number) value).longValue());
+            } else if (value instanceof Timestamp) {
+                return timestamp2ldt.apply(((Timestamp) value));
+            } else if (value instanceof Date) {
+                return dt2ldt.apply(((Date) value));
+            } else if (value instanceof String) {
+                final String line = (String) value;
+                final LocalDateTime _ldt = str2ldt.apply(line);
+                if (Objects.nonNull(_ldt)) {
+                    return _ldt;
+                }
+                final LocalDate _ld = str2ld.apply(line);
+                if (Objects.nonNull(_ld)) {
+                    return ld2ldt.apply(_ld);
+                }
+                final LocalTime _lt = str2lt.apply(line);
+                if (Objects.nonNull(_lt)) {
+                    return lt2ldt.apply(_lt);
+                }
+                return null;
+            } else {
+                return null;
+            }
         }
 
     }

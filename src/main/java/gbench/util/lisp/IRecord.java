@@ -338,16 +338,21 @@ public interface IRecord extends Comparable<IRecord> {
      * 键名索引
      * 
      * @param key 键名
-     * @return 键名索引 从0开始
+     * @return 键名索引 从0开始, key 为null 时返回null
      */
     default Integer indexOf(final String key) {
+
+        if (key == null) {
+            return null;
+        }
 
         final List<String> kk = this.keys();
 
         for (int i = 0; i < kk.size(); i++) {
             final String _key = kk.get(i);
-            if (key.equals(_key))
+            if (key.equals(_key)) {
                 return i;
+            }
         }
 
         return null;
