@@ -2,10 +2,14 @@ package gbench.util.lisp;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -114,7 +118,7 @@ public class MyRecord implements IRecord, Serializable {
             rec = IRecord.REC(objM.readValue(json, Map.class));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
-            System.err.println("error json:\n"+json);
+            System.err.println("error json:\n" + json);
         }
         return rec;
     }
@@ -165,6 +169,18 @@ public class MyRecord implements IRecord, Serializable {
     public static <T> IRecord REC(final T... kvs) {
         final int n = kvs.length;
         final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+        final Consumer<Tuple2<String, ?>> put_tuple = tup -> {
+            data.put(tup._1, tup._2);
+        };
+        final Consumer<Stream<Object>> put_stream = stream -> {
+            stream.map(Tuple2.snb(0)).map(t -> {
+                Tuple2<?, ?> tup = (Tuple2<?, ?>) (t._2 instanceof Tuple2 ? t._2 : t);
+                return tup.map1(Object::toString);
+            }).forEach(put_tuple);
+        };
+        final Consumer<Iterable<Object>> put_iterable = iterable -> {
+            put_stream.accept(StreamSupport.stream(iterable.spliterator(), false));
+        };
 
         if (n == 1) { // 单一参数情况
             final T obj = kvs[0];
@@ -174,11 +190,27 @@ public class MyRecord implements IRecord, Serializable {
                 }); // forEach
             } else if (obj instanceof IRecord) {// IRecord 对象类型 复制对象数据
                 data.putAll(((IRecord) obj).toMap());
+            } else if (obj instanceof Collection) {// Collection 对象类型 复制对象数据
+                @SuppressWarnings("unchecked")
+                final Collection<Object> coll = (Collection<Object>) obj;
+                put_iterable.accept(coll);
+            } else if (obj instanceof Iterable) {// Iterable 对象类型 复制对象数据
+                @SuppressWarnings("unchecked")
+                final Iterable<Object> iterable = (Iterable<Object>) obj;
+                put_iterable.accept(iterable);
+            } else if (obj instanceof Iterator) {// Iterable 对象类型 复制对象数据
+                @SuppressWarnings("unchecked")
+                final Iterable<Object> iterable = () -> (Iterator<Object>) obj;
+                put_iterable.accept(iterable);
+            } else if (obj instanceof Stream) {// stream 对象类型 复制对象数据
+                @SuppressWarnings("unchecked")
+                final Stream<Object> stream = (Stream<Object>) obj;
+                put_stream.accept(stream);
             } else if (obj instanceof String) { // 字符串类型的单个参数
                 final IRecord rec = MyRecord.fromJson(obj.toString()); // 尝试解析json
                 if (rec != null) {
                     data.putAll(rec.toMap());
-                }
+                } // if
             } // if
         } else { // 键名减值序列
             for (int i = 0; i < n - 1; i += 2) {

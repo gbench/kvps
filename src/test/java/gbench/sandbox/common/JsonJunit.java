@@ -9,7 +9,9 @@ import static java.util.Arrays.asList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.stream.Stream;
 
 import gbench.util.json.MyJson;
 import gbench.util.lisp.DFrame;
@@ -51,6 +53,14 @@ public class JsonJunit {
         println(r);
         final DFrame dfm = r.llS("items").collect(DFrame.dfmclc(IRecord::REC));
         println(dfm);
+    }
+
+    @Test
+    public void bar() {
+        println(IRecord.REC(Arrays.asList(1, 2, 3, 4)));
+        println(IRecord.REC(Arrays.asList(1, 2, 3, 4).iterator()));
+        println(IRecord.REC(Stream.of(1, 2, 3, 4)));
+        println(IRecord.REC(REC("name", "zhangsan", "sex", true).tuples()));
     }
 
 }
