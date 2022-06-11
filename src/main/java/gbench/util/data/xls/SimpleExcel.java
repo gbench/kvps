@@ -40,6 +40,7 @@ import gbench.util.io.FileSystem;
 import gbench.util.lisp.Tuple2;
 
 /**
+ * EXCEL 数据文件的处理与分析工具
  * 
  * @author xuqinghua
  *
@@ -52,7 +53,7 @@ public class SimpleExcel implements AutoCloseable {
      * @param path 文件路径
      * @return SimpleExcel 对象本身 以实现链式编程
      */
-    public SimpleExcel(String path) {
+    public SimpleExcel(final String path) {
         this.load(path);
     }
 
@@ -190,24 +191,36 @@ public class SimpleExcel implements AutoCloseable {
      * @return 左上顶点的为cell单元格地址
      */
     public Tuple2<Integer, Integer> lt(final Sheet sht, final Integer firstRowIndex, final Integer maxSize) {
-        if (sht == null)
+        if (sht == null) {
             return null;
+        }
+
         int c1 = Integer.MAX_VALUE;
         int c2 = Integer.MAX_VALUE;
 
         for (int i = firstRowIndex; i < maxSize; i++) {
             final Row row = sht.getRow(i);
-            if (row == null)
+            if (row == null) {
                 continue;
-            if (row.getPhysicalNumberOfCells() < 1)
+            }
+
+            if (row.getPhysicalNumberOfCells() < 1) {
                 continue;
-            if (c1 == Integer.MAX_VALUE)
+            }
+
+            if (c1 == Integer.MAX_VALUE) {
                 c1 = i;
-            if (row.getFirstCellNum() < c2)
+            }
+
+            if (row.getFirstCellNum() < c2) {
                 c2 = row.getFirstCellNum();
-        }
-        if (c1 == Integer.MAX_VALUE || c2 == Integer.MAX_VALUE)
+            }
+        } // for
+
+        if (c1 == Integer.MAX_VALUE || c2 == Integer.MAX_VALUE) {
             return null;
+        } // if
+
         // println("lt:"+c1+","+c2);
         return new Tuple2<>(c1, c2);
     }
@@ -224,8 +237,10 @@ public class SimpleExcel implements AutoCloseable {
     public Tuple2<Integer, Integer> rb(final Sheet sht, final Integer firstRowIndex, final Integer maxSize) {
         int c1 = Integer.MIN_VALUE;
         int c2 = Integer.MIN_VALUE;
-        if (sht == null)
+
+        if (sht == null) {
             return null;
+        }
 
         for (int i = firstRowIndex; i < maxSize; i++) {
             final Row row = sht.getRow(i);
@@ -238,8 +253,10 @@ public class SimpleExcel implements AutoCloseable {
                 c2 = row.getLastCellNum() - 1;
         } // for
 
-        if (c1 == Integer.MIN_VALUE)
+        if (c1 == Integer.MIN_VALUE) {
             return null;
+        }
+
         return new Tuple2<>(c1, c2);
     }
 
@@ -256,7 +273,9 @@ public class SimpleExcel implements AutoCloseable {
         final Tuple2<Integer, Integer> lt = this.lt(sht, firstRowIndex, maxSize);
         final Tuple2<Integer, Integer> rb = this.rb(sht, firstRowIndex, maxSize);
         final String rangeName = ltrb2rngname(lt, rb);// 转换成rangename
+
         // println(rangeName);
+
         return this.range(sht, parse(rangeName));
     }
 
@@ -280,8 +299,10 @@ public class SimpleExcel implements AutoCloseable {
      * @return 可用的 sheetid 页面的数据区域
      */
     public StrMatrix autoDetect(int shtid, Integer firstRowIndex, Integer maxSize) {
-        if (shtid >= this.sheets().size())
+        if (shtid >= this.sheets().size()) {
             return null;
+        }
+
         return autoDetect(this.sheet(shtid), firstRowIndex, maxSize);
     }
 
