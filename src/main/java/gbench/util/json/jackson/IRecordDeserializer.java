@@ -15,7 +15,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import gbench.util.lisp.IRecord;
 
 /**
- *
+ * IRecord 反序列化 <br>
  * @author gbench
  *
  */
@@ -24,7 +24,8 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
     private static final long serialVersionUID = 637227298143614828L;
 
     /**
-     *
+     * 反序列化 <br>
+     * 构造函数
      */
     public IRecordDeserializer() {
         super(IRecord.class);
@@ -36,10 +37,9 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
      * @param node
      * @return IRecord 对象
      */
-    public static IRecord objnode2rec(ObjectNode node) {
-        Map<String, Object> mm = new LinkedHashMap<>();
+    public static IRecord objnode2rec(final ObjectNode node) {
+        final Map<String, Object> mm = new LinkedHashMap<>();
         node.fieldNames().forEachRemaining(name -> mm.put(name, node.get(name)));
-        // System.out.println(mm);
         return IRecord.REC(mm);
     }
 
@@ -52,12 +52,13 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
     public static Function<ObjectNode, IRecord> node2rec = IRecordDeserializer::objnode2rec;
 
     @Override
-    public IRecord deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public IRecord deserialize(final JsonParser jp, final DeserializationContext ctxt)
+            throws IOException, JsonProcessingException {
 
-        JsonNode node = jp.getCodec().readTree(jp);
-        Map<String, Object> mm = new LinkedHashMap<>();
+        final JsonNode node = jp.getCodec().readTree(jp);
+        final Map<String, Object> mm = new LinkedHashMap<>();
         node.fieldNames().forEachRemaining(name -> {
-            JsonNode jsn = node.get(name);
+            final JsonNode jsn = node.get(name);
             if (jsn.isObject()) {
                 mm.put(name, objnode2rec((ObjectNode) node.get(name)));
             } else {
@@ -77,7 +78,8 @@ public class IRecordDeserializer extends StdDeserializer<IRecord> {
                 } // if
                 mm.put(name, value);
             } // if
-        });
+        }); // if forEachRemaining
+
         return IRecord.REC(mm);
     }
 }

@@ -11,7 +11,7 @@ import gbench.util.lisp.IRecord;
 import gbench.util.lisp.Tuple2;
 
 /**
- * IRecord的序列化方法
+ * IRecord 序列化
  * 
  * @author gbench
  *
@@ -21,7 +21,8 @@ public class IRecordSerializer extends StdSerializer<IRecord> {
     private static final long serialVersionUID = -6713069486531158400L;
 
     /**
-     * 序列化
+     * 序列化 <br>
+     * 构造函数
      */
     public IRecordSerializer() {
         super(IRecord.class);
