@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import gbench.util.json.MyJson;
 import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
+import gbench.util.lisp.MyRecord;
 
 /**
  * 
@@ -67,6 +68,13 @@ public class JsonJunit {
         println(IRecord.REC("name:[1,2,,,]")); // 省略值类型
         println(IRecord.REC("http://localhost:8089/kvps/pm/teamGroup")); // url 结构
         println(IRecord.REC("E:/slicee/temp/kvps/data/registry.json")); // 文件结构
+
+        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData",
+                REC("$method", "post", "name", "reqdec", "keys", //
+                        asList("a,b,c".split(",")))));
+        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData2",
+                REC("$method", "post", "$content_type", "form", "name", "reqdec", "keys", //
+                        asList("a,b,c,9".split(",")))));
     }
 
 }

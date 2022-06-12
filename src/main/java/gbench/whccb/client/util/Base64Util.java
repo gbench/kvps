@@ -36,7 +36,6 @@ public class Base64Util {
 			System.out.println(base64);*/
 			System.out.println(Base64Util.unescape("eyJjb2RlIjowLCJjb3VudCI6MCwibWVzc2FnZSI6IuWPguaVsOmUmeivr++8gSIsInBhZ2UiOjAsInJvd3MiOm51bGwsInRvdGFsIjowfQ=="));
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}

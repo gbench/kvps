@@ -38,7 +38,6 @@ public class AESUtil {
 	//		System.out.println(decrypt("OrPqrdJHcMlOlXT3+vIRRSu0Uyq24lWNDyvJ1XC3bg2lWMr/LOFWxTc6eoEc5Ai5hWrHIWIOagqujzNfr5zIQOt69gaGstDNrclLanZ+UoGPk+zAgf0Ljhbu+40vdm+0bzdNx/0So+AYEPWEiA20FXLcsT+qGI8dz06feqUSC+8=", "a0b923820dcc509a"));
 			System.out.println(Base64Util.unescape(decrypt("eyJjb2RlIjowLCJjb3VudCI6MCwibWVzc2FnZSI6IuWPguaVsOmUmeivr++8gSIsInBhZ2UiOjAsInJvd3MiOm51bGwsInRvdGFsIjowfQ==","1ef00432c2a9cc73")));
 		} catch (Exception e) {
-			// TODO: handle exception
 			e.printStackTrace();
 		}
 	}

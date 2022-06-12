@@ -9,6 +9,7 @@ import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -305,7 +306,16 @@ public class MyRecord implements IRecord, Serializable {
         final IRecord _params = Optional.ofNullable(params).orElse(REC());
         final IRecord __params = _params.tupleS().filter(e -> !e._1.startsWith("$")).collect(IRecord.recclc());
         try {
-            final String content_type = _params.strOpt("$content_type").orElse(" application/json;charset:utf-8");
+            final String content_type = _params.strOpt("$content_type").map(e -> {
+                switch (e) {
+                case "form": {
+                    return "application/x-www-form-urlencoded;charset=utf8";
+                }
+                default: { // 默认类型
+                    return e;
+                }
+                }
+            }).orElse("application/json;charset:utf-8");
             final String method = _params.strOpt("$method").orElse("GET").toUpperCase();
             final Integer conn_timeout = _params.i4Opt("$conn_timeout").orElse(10000);
             final Integer read_timeout = _params.i4Opt("$read_timeout").orElse(conn_timeout);
@@ -338,9 +348,12 @@ public class MyRecord implements IRecord, Serializable {
                         break;
                     } // json
                     default: { // 默认类型
-                        final String data = __params.tupleS().map(e -> IRecord.FT("$0=$1", e._1, e._2))
-                                .collect(Collectors.joining(","));
-                        bw.write(data);
+                        final String data = __params.tupleS() //
+                                .map(e -> e.map2(s -> urlencode(s + ""))) //
+                                .map(e -> IRecord.FT("$0=$1", e._1, e._2)) //
+                                .collect(Collectors.joining("&"));
+                        final String _data = data;
+                        bw.write(_data);
                     } // default
                     } // switch
                 } // if method
@@ -400,6 +413,31 @@ public class MyRecord implements IRecord, Serializable {
         String ret = null;
         try (final BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding))) {
             ret = br.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
+    /**
+     * 
+     * @param line
+     * @return
+     */
+    public static String urlencode(final String line) {
+        return urlencode(line, "utf8");
+    }
+
+    /**
+     * 
+     * @param line
+     * @param encoding
+     * @return
+     */
+    public static String urlencode(final String line, final String encoding) {
+        String ret = null;
+        try {
+            ret = URLEncoder.encode(line, encoding);
         } catch (Exception e) {
             e.printStackTrace();
         }

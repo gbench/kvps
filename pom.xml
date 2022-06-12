@@ -16,6 +16,8 @@
 	</parent>
 
 	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.build.outputEncoding>UTF-8</project.build.outputEncoding>
 		<poi-version>4.1.2</poi-version>
 	</properties>
 
