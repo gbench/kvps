@@ -173,11 +173,11 @@ public class MyRecord implements IRecord, Serializable {
      */
     @SafeVarargs
     public static <T> IRecord REC(final T... kvs) {
-        final int n = kvs.length;
-        final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+        final int n = kvs.length; // 参数数量
+        final LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>(); // 中间数据缓存
         final Consumer<Tuple2<String, ?>> put_tuple = tup -> { // 元组处理
             data.put(tup._1, tup._2);
-        };
+        }; // put_tuple
         final Consumer<Stream<Object>> put_stream = stream -> { // 数据流的处理
             stream.map(Tuple2.snb(0)).map(tuple -> { // 编号分组
                 return Optional.ofNullable(tuple._2).map(e -> {
@@ -224,8 +224,7 @@ public class MyRecord implements IRecord, Serializable {
             } else if (single instanceof String) { // 字符串类型的单个参数
                 final String line = single.toString();
                 final IRecord rec = Optional.ofNullable(line) //
-                        .map(String::trim)
-                        .map(ln -> { //
+                        .map(String::trim).map(ln -> { //
                             IRecord r = null;
 
                             try { // 乐观锁 假设用户输入的是合法的json
@@ -252,7 +251,7 @@ public class MyRecord implements IRecord, Serializable {
         } else { // 键名减值序列
             for (int i = 0; i < n - 1; i += 2) {
                 data.put(kvs[i].toString(), kvs[i + 1]);
-            }
+            } // for
         } // if
 
         return new MyRecord(data);

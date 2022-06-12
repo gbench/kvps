@@ -9,8 +9,10 @@ import java.util.*;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.ser.std.DateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
@@ -29,23 +31,23 @@ import gbench.util.json.jackson.IRecordModule;
 public class MyJson {
 
     /**
+     * 使用指定 注册模块 来 构造 ObjectMapper
      * 
-     * @param modules
-     * @return
+     * @param modules Json 模块列表
+     * @return ObjectMapper
      */
     public static ObjectMapper of(final Module... modules) {
-        final ObjectMapper objM = new ObjectMapper();
-        final List<Module> list = new ArrayList<Module>();
+        final JsonMapper jm = JsonMapper.builder() //
+                .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true) // 允许省略字段名的引号
+                .configure(JsonReadFeature.ALLOW_TRAILING_COMMA, true) // 允许末尾保留逗号
+                .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true) // 允许单引号
+                .build(); //
 
-        for (final Module m : modules) {
-            list.add(m);
-        }
+        Arrays.stream(modules).distinct().forEach(e -> { // 模块去重并注册
+            jm.registerModule(e);
+        }); // forEach
 
-        list.stream().distinct().forEach(e -> {
-            objM.registerModule(e);
-        });
-
-        objM.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true); // 允许省略字段名的引号
+        final ObjectMapper objM = jm;
 
         return objM;
     }
@@ -77,13 +79,13 @@ public class MyJson {
     }
 
     /**
-     * 带有 IRecord 类型解析功能的 Mapper
+     * 默认的mapper
      * 
      * @return ObjectMapper
      */
     public static ObjectMapper recM() {
 
-        return recM("default");
+        return recM("default_mapper"); // 默认的mapper
     }
 
     /**
