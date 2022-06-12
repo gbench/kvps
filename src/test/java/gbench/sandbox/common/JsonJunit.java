@@ -66,8 +66,8 @@ public class JsonJunit {
         println(IRecord.REC(REC("name", "zhangsan", "sex", true).toMap().entrySet().iterator()));
         println(IRecord.REC("name:'zhangsan',sex:false,postcode:200052")); // 省略括号的形式
         println(IRecord.REC("name:[1,2,,,]")); // 省略值类型
-        println(IRecord.REC("http://localhost:8089/kvps/pm/teamGroup")); // url 结构
-        println(IRecord.REC("E:/slicee/temp/kvps/data/registry.json")); // 文件结构
+        println(IRecord.REC("http://localhost:8089/kvps/junit/sendData2?name=zhangsan&keys=1,2,3")); // url 结构
+        println(IRecord.REC("E:/slicee/temp/kvps/data/devops/project.json")); // 文件结构
 
         println(MyRecord.send("http://localhost:8089/kvps/junit/sendData",
                 REC("$method", "post", "name", "reqdec", "keys", //

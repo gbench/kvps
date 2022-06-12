@@ -298,29 +298,38 @@ public class MyRecord implements IRecord, Serializable {
      * 简单的http 请求
      * 
      * @param url    请求url
-     * @param params 请求参数
+     * @param params 请求参数,$content_type,$conn_timeout,$read_timeout 读写参数
      * @return 请求返回结果
      */
     public static String send(final String url, final IRecord params) {
         String ret = null;
-        final IRecord _params = Optional.ofNullable(params).orElse(REC());
-        final IRecord __params = _params.tupleS().filter(e -> !e._1.startsWith("$")).collect(IRecord.recclc());
+        final IRecord adjusted_params = Optional.ofNullable(params).orElse(REC()); // 调整后的请求参数
+        final IRecord req_params = adjusted_params.tupleS().filter(e -> !e._1.startsWith("$"))
+                .collect(IRecord.recclc());
+        final String APPLICATION_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded;charset=utf8";
+        final String APPLICATION_JSON = "application/json;charset:utf8";
         try {
-            final String content_type = _params.strOpt("$content_type").map(e -> {
-                switch (e) {
-                case "form": {
-                    return "application/x-www-form-urlencoded;charset=utf8";
-                }
-                default: { // 默认类型
-                    return e;
-                }
-                }
-            }).orElse("application/json;charset:utf-8");
-            final String method = _params.strOpt("$method").orElse("GET").toUpperCase();
-            final Integer conn_timeout = _params.i4Opt("$conn_timeout").orElse(10000);
-            final Integer read_timeout = _params.i4Opt("$read_timeout").orElse(conn_timeout);
+            final String content_type = adjusted_params.strOpt("$content_type") //
+                    .map(e -> e.toLowerCase()) // 统一使用小写格式
+                    .map(e -> {
+                        switch (e) {
+                        case "form": { // 表单类型
+                            return APPLICATION_WWW_FORM_URLENCODED;
+                        }
+                        case "json": { // JSOn 类型
+                            return APPLICATION_JSON;
+                        }
+                        default: { // 默认类型
+                            return e;
+                        }
+                        }
+                    }).orElse(APPLICATION_JSON);
+            final String method = adjusted_params.strOpt("$method").orElse("GET").toUpperCase();
+            final Integer conn_timeout = adjusted_params.i4Opt("$conn_timeout").orElse(10000);
+            final Integer read_timeout = adjusted_params.i4Opt("$read_timeout").orElse(conn_timeout);
             final URL _url = new URL(url);
             final HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+
             conn.setUseCaches(false);
             conn.setConnectTimeout(conn_timeout);
             conn.setReadTimeout(read_timeout);
@@ -330,34 +339,27 @@ public class MyRecord implements IRecord, Serializable {
             conn.setRequestMethod(method);// 设置请求方式为post
             conn.connect();
             final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
-            final String _content_type = Optional.ofNullable(content_type).map(e -> {
-                if (e.contains("application/json")) {
-                    return "json";
-                } else {
-                    return e;
-                }
-            }).orElse(""); // 内容类型
-            if (__params.size() > 0) {
-                if (method.equals("GET")) {
+
+            if (req_params.size() > 0) {
+                if (method.equals("GET")) { // GET 方法
                     // do nothing
                 } else { // 其他方法
-                    switch (_content_type) {
-                    case "json": { // json 格斯
-                        final String data = __params.json();
+                    switch (content_type) {
+                    case APPLICATION_JSON: { // json 格斯
+                        final String data = req_params.json(); // json 数据
                         bw.write(data);
                         break;
                     } // json
                     default: { // 默认类型
-                        final String data = __params.tupleS() //
-                                .map(e -> e.map2(s -> urlencode(s + ""))) //
-                                .map(e -> IRecord.FT("$0=$1", e._1, e._2)) //
-                                .collect(Collectors.joining("&"));
-                        final String _data = data;
-                        bw.write(_data);
+                        final String data = req_params.tupleS() // 键值序列
+                                .map(e -> e.map2(s -> urlencode(s + ""))) // URLencode
+                                .map(e -> IRecord.FT("$0=$1", e._1, e._2)) // 健名&键值
+                                .collect(Collectors.joining("&")); // 值的拼接
+                        bw.write(data);
                     } // default
-                    } // switch
+                    } // switch content_type
                 } // if method
-            } // if __params
+            } // if req_params
 
             bw.flush();
             bw.close();
@@ -420,19 +422,24 @@ public class MyRecord implements IRecord, Serializable {
     }
 
     /**
+     * Translates a string into application/x-www-form-urlencoded format using utf8
+     * encoding
      * 
-     * @param line
-     * @return
+     * @param line 数据行
+     * @return URL编码
+     * @return application/x-www-form-urlencoded format
      */
     public static String urlencode(final String line) {
         return urlencode(line, "utf8");
     }
 
     /**
+     * Translates a string into application/x-www-form-urlencoded format using a
+     * specific encoding scheme
      * 
-     * @param line
-     * @param encoding
-     * @return
+     * @param line     String to be translated.
+     * @param encoding The name of a supported characterencoding.
+     * @return application/x-www-form-urlencoded format
      */
     public static String urlencode(final String line, final String encoding) {
         String ret = null;
@@ -446,7 +453,14 @@ public class MyRecord implements IRecord, Serializable {
 
     private LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
 
+    /**
+     * 路径模式
+     */
     final static Pattern file_pattern = Pattern.compile("(^//.|^/|^[a-zA-Z])?:?/.+(/$)?");
+
+    /**
+     * URL模式
+     */
     final static Pattern url_pattern = Pattern
             .compile("(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
 }
