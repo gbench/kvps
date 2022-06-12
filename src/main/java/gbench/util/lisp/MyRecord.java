@@ -266,6 +266,11 @@ public class MyRecord implements IRecord, Serializable {
                         } // if
                     } // if
                 } //
+            } else if (single instanceof File) { // 文件类型
+                final String ln = readTextFile((File) single); // 读取文件
+                IRecord.REC(ln).forEach((_k, _v) -> { // 字段添加
+                    data.put(_k, _v);
+                }); // forEach
             } else { // if
                 // do nothing 省略其他单值情况
             } // if
@@ -359,8 +364,18 @@ public class MyRecord implements IRecord, Serializable {
      * @param file 文本文件路径
      * @return 文本内容
      */
-    public static String readTextFile(String file) {
-        return readTextFile(new File(file), "UTF-8");
+    public static String readTextFile(final String file) {
+        return readTextFile(new File(file));
+    }
+
+    /**
+     * 文本文件的读取
+     * 
+     * @param file 文本文件路径
+     * @return 文本内容
+     */
+    public static String readTextFile(final File file) {
+        return readTextFile(file, "UTF-8");
     }
 
     /**
@@ -370,7 +385,7 @@ public class MyRecord implements IRecord, Serializable {
      * @param encoding 文件编码
      * @return 文本内容
      */
-    public static String readTextFile(String file, final String encoding) {
+    public static String readTextFile(final String file, final String encoding) {
         return readTextFile(new File(file), encoding);
     }
 
