@@ -2,7 +2,6 @@ package gbench.util.json.jackson;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -115,7 +114,7 @@ public abstract class AbstractDeserializer<T> extends StdDeserializer<T> {
     public T deserialize(final JsonParser jp, final DeserializationContext ctxt)
             throws IOException, JsonProcessingException {
         final JsonNode node = jp.getCodec().readTree(jp);
-        final Map<String, Object> tuples = new HashMap<String, Object>();
+        final Map<String, Object> tuples = new LinkedHashMap<String, Object>();
 
         node.fieldNames().forEachRemaining(name -> {
             final JsonNode jsnode = node.get(name);

@@ -7,7 +7,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ser.std.DateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -31,16 +33,19 @@ public class MyJson {
      * @param modules
      * @return
      */
-    public static ObjectMapper of(final com.fasterxml.jackson.databind.Module... modules) {
+    public static ObjectMapper of(final Module... modules) {
         final ObjectMapper objM = new ObjectMapper();
-        final List<com.fasterxml.jackson.databind.Module> list = new ArrayList<com.fasterxml.jackson.databind.Module>();
-        for (final com.fasterxml.jackson.databind.Module m : modules) {
+        final List<Module> list = new ArrayList<Module>();
+
+        for (final Module m : modules) {
             list.add(m);
         }
 
         list.stream().distinct().forEach(e -> {
             objM.registerModule(e);
         });
+
+        objM.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true); // 允许省略字段名的引号
 
         return objM;
     }
@@ -89,11 +94,23 @@ public class MyJson {
      */
     public static String toJson(final Object obj) {
         try {
-            return recM().writeValueAsString(obj);
+            return toJson2(obj);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * 生成 json 字符串, 带有 异常抛出
+     * 
+     * @param obj 目标对象
+     * @return 生成 json 字符串
+     */
+    public static String toJson2(final Object obj) throws JsonProcessingException {
+
+        return recM().writeValueAsString(obj);
+
     }
 
     /**
@@ -121,10 +138,22 @@ public class MyJson {
         IRecord rec = null;
 
         try {
-            rec = recM().readValue(json, IRecord.class);
+            rec = fromJson2(json);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
+
+        return rec;
+    }
+
+    /**
+     * 把json字符串转成IRecord 对象 带有 异常抛出
+     * 
+     * @param json json字符串转
+     * @return IRecord 对象
+     */
+    public static IRecord fromJson2(final String json) throws JsonProcessingException {
+        final IRecord rec = recM().readValue(json, IRecord.class);
 
         return rec;
     }

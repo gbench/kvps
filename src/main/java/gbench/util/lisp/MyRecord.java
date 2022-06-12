@@ -40,7 +40,8 @@ public class MyRecord implements IRecord, Serializable {
     }
 
     /**
-     * 构造空数据记录
+     * 默认构造函数 <br>
+     * 构造空数据记录 {}
      * 
      */
     public MyRecord() {
@@ -117,11 +118,32 @@ public class MyRecord implements IRecord, Serializable {
     /**
      * 转换成 json 格式
      * 
+     * @param json json字符串
+     * @throws Exception
+     */
+    public static IRecord fromJson2(final String json) throws Exception {
+        return MyJson.fromJson2(json);
+    }
+
+    /**
+     * 转换成 json 格式
+     * 
      * @param obj 值对象
      * @return json 字符串
      */
     public static String toJson(final Object obj) {
         return MyJson.toJson(obj);
+    }
+
+    /**
+     * 转换成 json 格式,带有异常抛出
+     * 
+     * @param obj 值对象
+     * @return json 字符串
+     * @throws Exception
+     */
+    public static String toJson2(final Object obj) throws Exception {
+        return MyJson.toJson2(obj);
     }
 
     /**
@@ -135,6 +157,7 @@ public class MyRecord implements IRecord, Serializable {
     public static <T> List<T> iterable2list(final Iterable<T> iterable, final long maxSize) {
         final ArrayList<T> aa = new ArrayList<>();
         StreamSupport.stream(iterable.spliterator(), false).limit(maxSize).forEach(aa::add);
+
         return aa;
     }
 
@@ -156,53 +179,75 @@ public class MyRecord implements IRecord, Serializable {
             data.put(tup._1, tup._2);
         };
         final Consumer<Stream<Object>> put_stream = stream -> { // 数据流的处理
-            stream.map(Tuple2.snb(0)).map(tuple -> {
+            stream.map(Tuple2.snb(0)).map(tuple -> { // 编号分组
                 return Optional.ofNullable(tuple._2).map(e -> {
-                    if (e instanceof Tuple2) { // Tuple2
+                    if (e instanceof Tuple2) { // Tuple2 元组类型
                         return (Tuple2<?, ?>) e;
-                    } else if (e instanceof Map.Entry) { // Entry
-                        Map.Entry<?, ?> me = (Map.Entry<?, ?>) tuple._2;
+                    } else if (e instanceof Map.Entry) { // Map.Entry 类型
+                        final Map.Entry<?, ?> me = (Map.Entry<?, ?>) tuple._2;
                         return Tuple2.of(me.getKey(), me.getValue());
-                    } else { // default
+                    } else { // default 默认
                         return tuple;
                     } // if
-                }).map(e -> e.map1(Object::toString)).orElse(null);
+                }).map(e -> e.map1(Object::toString)).orElse(null); // key 专为字符串类型 && 默认值为null
             }).filter(Objects::nonNull).forEach(put_tuple); //
         }; // put_stream
-        final Consumer<Iterable<Object>> put_iterable = iterable -> {
+        final Consumer<Iterable<Object>> put_iterable = iterable -> { // iterable 数据处理
             put_stream.accept(StreamSupport.stream(iterable.spliterator(), false));
         }; // put_iterable
 
         if (n == 1) { // 单一参数情况
-            final T obj = kvs[0];
-            if (obj instanceof Map) { // Map情况的数据处理
-                ((Map<?, ?>) obj).forEach((k, v) -> { // 键值的处理
+            final T single = kvs[0]; // 提取单值
+            if (single instanceof Map) { // Map情况的数据处理
+                ((Map<?, ?>) single).forEach((k, v) -> { // 键值的处理
                     final String key = k instanceof String ? (String) k : k + "";
                     data.put(key, v);
                 }); // forEach
-            } else if (obj instanceof IRecord) {// IRecord 对象类型 复制对象数据
-                data.putAll(((IRecord) obj).toMap());
-            } else if (obj instanceof Collection) {// Collection 对象类型 复制对象数据
+            } else if (single instanceof IRecord) {// IRecord 对象类型 复制对象数据
+                data.putAll(((IRecord) single).toMap());
+            } else if (single instanceof Collection) {// Collection 对象类型 复制对象数据
                 @SuppressWarnings("unchecked")
-                final Collection<Object> coll = (Collection<Object>) obj;
+                final Collection<Object> coll = (Collection<Object>) single;
                 put_iterable.accept(coll);
-            } else if (obj instanceof Iterable) {// Iterable 对象类型 复制对象数据
+            } else if (single instanceof Iterable) {// Iterable 对象类型 复制对象数据
                 @SuppressWarnings("unchecked")
-                final Iterable<Object> iterable = (Iterable<Object>) obj;
+                final Iterable<Object> iterable = (Iterable<Object>) single;
                 put_iterable.accept(iterable);
-            } else if (obj instanceof Iterator) {// Iterable 对象类型 复制对象数据
+            } else if (single instanceof Iterator) {// Iterable 对象类型 复制对象数据
                 @SuppressWarnings("unchecked")
-                final Iterable<Object> iterable = () -> (Iterator<Object>) obj;
+                final Iterable<Object> iterable = () -> (Iterator<Object>) single;
                 put_iterable.accept(iterable);
-            } else if (obj instanceof Stream) {// stream 对象类型 复制对象数据
+            } else if (single instanceof Stream) {// stream 对象类型 复制对象数据
                 @SuppressWarnings("unchecked")
-                final Stream<Object> stream = (Stream<Object>) obj;
+                final Stream<Object> stream = (Stream<Object>) single;
                 put_stream.accept(stream);
-            } else if (obj instanceof String) { // 字符串类型的单个参数
-                final IRecord rec = MyRecord.fromJson(obj.toString()); // 尝试解析json
-                if (rec != null) {
-                    data.putAll(rec.toMap());
+            } else if (single instanceof String) { // 字符串类型的单个参数
+                final String line = single.toString();
+                final IRecord rec = Optional.ofNullable(line) //
+                        .map(String::trim)
+                        .map(ln -> { //
+                            IRecord r = null;
+
+                            try { // 乐观锁 假设用户输入的是合法的json
+                                r = MyRecord.fromJson2(ln);
+                            } catch (Exception e) { // 非合法的json
+                                if (!(ln.startsWith("{") && ln.endsWith("}"))) { // 省略的 最外层的大括号
+                                    final String _ln = IRecord.FT("{$0}", ln); // 补充外层括号
+                                    r = MyRecord.fromJson(_ln);
+                                } // if
+                            } // try
+
+                            return r;
+                        }) //
+                        .orElse(IRecord.REC()); // 尝试解析json
+                if (rec != null) { //
+                    final Map<String, Object> _data = rec.toMap();
+                    if (_data.size() > 0) { // 非空数据
+                        data.putAll(_data);
+                    } // if
                 } // if
+            } else { // if
+                // do nothing 省略其他单值情况
             } // if
         } else { // 键名减值序列
             for (int i = 0; i < n - 1; i += 2) {

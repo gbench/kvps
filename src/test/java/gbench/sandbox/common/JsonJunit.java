@@ -63,6 +63,7 @@ public class JsonJunit {
         println(IRecord.REC(Stream.of(1, 2, 3, 4)));
         println(IRecord.REC(REC("name", "zhangsan", "sex", true).tuples()));
         println(IRecord.REC(REC("name", "zhangsan", "sex", true).toMap().entrySet().iterator()));
+        println(IRecord.REC("name:\"zhangsan\",sex:false,postcode:20005")); // 省略括号的形式
     }
 
 }
