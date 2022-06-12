@@ -2,6 +2,8 @@ package gbench.util.lisp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
@@ -245,12 +247,17 @@ public class MyRecord implements IRecord, Serializable {
                 put_stream.accept(stream);
             } else if (single instanceof String) { // 字符串类型的单个参数
                 final String line = single.toString();
-                if (url_pattern.matcher(line).matches()) {
-                    final String ln = send(line, null);
-                    IRecord.REC(ln).forEach((_k, _v) -> {
+                if (url_pattern.matcher(line).matches()) { // url 格式的数据
+                    final String ln = send(line); // 读取url
+                    IRecord.REC(ln).forEach((_k, _v) -> { // 字段添加
                         data.put(_k, _v);
-                    });
-                } else {
+                    }); // forEach
+                } else if (file_pattern.matcher(line).matches()) { // 文件格式的数据读取
+                    final String ln = readTextFile(line); // 读取文件
+                    IRecord.REC(ln).forEach((_k, _v) -> { // 字段添加
+                        data.put(_k, _v);
+                    }); // forEach
+                } else { // 其他类型
                     final IRecord rec = json_parse.apply(line);
                     if (rec != null) { //
                         final Map<String, Object> _data = rec.toMap();
@@ -295,9 +302,13 @@ public class MyRecord implements IRecord, Serializable {
         try {
             final String content_type = _params.strOpt("$content_type").orElse(" application/json;charset:utf-8");
             final String method = _params.strOpt("$method").orElse("GET").toUpperCase();
-            URL _url = new URL(url);
-            final  HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+            final Integer conn_timeout = _params.i4Opt("$conn_timeout").orElse(10000);
+            final Integer read_timeout = _params.i4Opt("$read_timeout").orElse(conn_timeout);
+            final URL _url = new URL(url);
+            final HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
             conn.setUseCaches(false);
+            conn.setConnectTimeout(conn_timeout);
+            conn.setReadTimeout(read_timeout);
             conn.setRequestProperty("Content-Type", content_type);
             conn.setDoOutput(true);
             conn.setDoInput(true);
@@ -334,6 +345,7 @@ public class MyRecord implements IRecord, Serializable {
             bw.close();
             final BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             ret = br.lines().collect(Collectors.joining("\n"));
+            br.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -341,8 +353,47 @@ public class MyRecord implements IRecord, Serializable {
         return ret;
     }
 
+    /**
+     * 文本文件的读取
+     * 
+     * @param file 文本文件路径
+     * @return 文本内容
+     */
+    public static String readTextFile(String file) {
+        return readTextFile(new File(file), "UTF-8");
+    }
+
+    /**
+     * 读取文本文件
+     * 
+     * @param file     文本文件
+     * @param encoding 文件编码
+     * @return 文本内容
+     */
+    public static String readTextFile(String file, final String encoding) {
+        return readTextFile(new File(file), encoding);
+    }
+
+    /**
+     * 读取文本文件
+     * 
+     * @param file     文本文件
+     * @param encoding 文件编码
+     * @return 文本内容
+     */
+    public static String readTextFile(final File file, final String encoding) {
+        String ret = null;
+        try (final BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file), encoding))) {
+            ret = br.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ret;
+    }
+
     private LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
 
+    final static Pattern file_pattern = Pattern.compile("(^//.|^/|^[a-zA-Z])?:?/.+(/$)?");
     final static Pattern url_pattern = Pattern
             .compile("(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
 }
