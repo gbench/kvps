@@ -2,9 +2,11 @@ package gbench.util.lisp;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.net.HttpURLConnection;
@@ -18,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -306,8 +309,11 @@ public class MyRecord implements IRecord, Serializable {
         final IRecord adjusted_params = Optional.ofNullable(params).orElse(REC()); // 调整后的请求参数
         final IRecord req_params = adjusted_params.tupleS().filter(e -> !e._1.startsWith("$"))
                 .collect(IRecord.recclc());
+        final String boundary = generateBoundary();
         final String APPLICATION_WWW_FORM_URLENCODED = "application/x-www-form-urlencoded;charset=utf8";
         final String APPLICATION_JSON = "application/json;charset:utf8";
+        final String MULTIPART_FORM = IRecord.FT("multipart/form-data;boundary=$0", boundary);
+
         try {
             final String content_type = adjusted_params.strOpt("$content_type") //
                     .map(e -> e.toLowerCase()) // 统一使用小写格式
@@ -316,8 +322,11 @@ public class MyRecord implements IRecord, Serializable {
                         case "form": { // 表单类型
                             return APPLICATION_WWW_FORM_URLENCODED;
                         }
-                        case "json": { // JSOn 类型
+                        case "json": { // JSON 类型
                             return APPLICATION_JSON;
+                        }
+                        case "multipart": { // JSON 类型
+                            return MULTIPART_FORM;
                         }
                         default: { // 默认类型
                             return e;
@@ -330,24 +339,78 @@ public class MyRecord implements IRecord, Serializable {
             final URL _url = new URL(url);
             final HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
 
-            conn.setUseCaches(false);
             conn.setConnectTimeout(conn_timeout);
             conn.setReadTimeout(read_timeout);
+
+            conn.setRequestMethod(method);// 设置请求方式为post
+            conn.setRequestProperty("Connection", "Keep-Alive");
             conn.setRequestProperty("Content-Type", content_type);
+            conn.setRequestProperty("User-Agent", "MyRecord Multipart HTTP Client 1.0");
+
             conn.setDoOutput(true);
             conn.setDoInput(true);
-            conn.setRequestMethod(method);// 设置请求方式为post
+            conn.setUseCaches(false);
+
             conn.connect();
-            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
+
+            final OutputStream outputStream = conn.getOutputStream();
+            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream, "UTF-8"));
 
             if (req_params.size() > 0) {
                 if (method.equals("GET")) { // GET 方法
                     // do nothing
                 } else { // 其他方法
-                    switch (content_type) {
-                    case APPLICATION_JSON: { // json 格斯
+                    final String ctype = Optional.ofNullable(content_type.split("[;]")) //
+                            .map(e -> e.length > 0 ? e[0] : null).orElse("application/json;");
+                    switch (ctype) {
+                    case "application/json": { // json 格式
                         final String data = req_params.json(); // json 数据
                         bw.write(data);
+                        break;
+                    } // json
+                    case "multipart/form-data": { // json 格式
+                        final DataOutputStream dos = new DataOutputStream(outputStream);
+                        final Function<String, String> extension_of = line -> {
+                            final int i = line.lastIndexOf(".");
+                            return i >= 0 ? line.substring(i + 1) : "";
+                        };
+                        final Consumer<Tuple2<String, Object>> dispose = tup -> {
+                            final String key = tup._1;
+                            final Object value = tup._2;
+                            final String newLine = "\r\n";
+                            try {
+                                dos.write(boundary.getBytes());
+                                if (value instanceof File) {
+                                    final int BLOCK_SIZE = 1024;
+                                    final File file = (File) value;
+                                    final String filename = file.getName();
+                                    final String extension = extension_of.apply(filename);
+                                    final String mimetype = REC(
+                                            "jpg,application/octet-streamm,jpeg,application/octet-streamm," //
+                                                    .split(",")).strOpt(extension).orElse("application/octet-streamm");
+                                    final String tpl = "Content-Disposition:form-data;name=\"$0\";filename=\"$1\"$2Content-Type:$3;chartset=utf8$5$5";
+                                    final String ln = IRecord.FT(tpl, key, filename, newLine, mimetype, "text/plan",
+                                            newLine, newLine);
+                                    System.out.println(ln);
+                                    dos.write(ln.getBytes());
+                                    byte[] bb = null;
+                                    final FileInputStream fis = new FileInputStream(file);
+                                    while ((bb = fis.readNBytes(BLOCK_SIZE)).length > 0) { // 读写数据
+                                        dos.write(bb);
+                                    } // while
+                                    fis.close();
+                                } else {
+                                    final String tpl = "Content-Disposition:form-data;name=\"$0\"$1$1$2$3Content-Type:$4;chartset=utf8$5$5";
+                                    final String ln = IRecord.FT(tpl, key, newLine, value, newLine, "text/plain",
+                                            newLine, newLine);
+                                    System.out.println(ln);
+                                    dos.write(ln.getBytes());
+                                }
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        };
+                        req_params.tupleS().forEach(dispose);
                         break;
                     } // json
                     default: { // 默认类型
@@ -366,11 +429,21 @@ public class MyRecord implements IRecord, Serializable {
             final BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
             ret = br.lines().collect(Collectors.joining("\n"));
             br.close();
+            ;
         } catch (Exception e) {
             e.printStackTrace();
         }
 
         return ret;
+    }
+
+    /**
+     * 边界分割线
+     * 
+     * @return 边界分割线
+     */
+    public static String generateBoundary() {
+        return "--------------------------" + UUID.randomUUID().toString().replace("-", "");
     }
 
     /**

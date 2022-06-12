@@ -6,11 +6,15 @@ import static gbench.util.io.Output.println;
 import static gbench.util.lisp.IRecord.REC;
 import static java.util.Arrays.asList;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import gbench.util.json.MyJson;
@@ -75,6 +79,26 @@ public class JsonJunit {
         println(MyRecord.send("http://localhost:8089/kvps/junit/sendData2",
                 REC("$method", "post", "$content_type", "form", "name", "reqdec", "keys", //
                         asList("a,b,c,9".split(",")))));
+        // 失败的请求
+        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData3",
+                REC("$method", "post", "$content_type", "multipart","name","key","keys","1,2,3".split(","),"file",new File("E:/slicee/temp/kvps/data/devops/project.json"))));
+    
+    }
+
+    @Test
+    public void ffo() {
+        final Function<String, String> filename_of = line -> {
+            final Matcher matcher = Pattern.compile("([^/\\\\]+)$").matcher(line);
+            final String name = matcher.find() ? matcher.group(1) : line;
+            return name;
+        };
+        final Function<String, String> extension_of = line -> {
+            final int i = line.lastIndexOf(".");
+            return i >= 0 ? line.substring(i + 1) : "";
+        };
+        println(filename_of.apply("a/b/c/d.jpg"));
+        println(extension_of.apply("d.jpg"));
+        println(IRecord.FT("'$0'", extension_of.apply("abc")));
     }
 
 }

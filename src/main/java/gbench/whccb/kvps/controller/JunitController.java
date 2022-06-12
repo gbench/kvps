@@ -3,6 +3,7 @@ package gbench.whccb.kvps.controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import gbench.util.lisp.IRecord;
 
@@ -40,6 +41,21 @@ public class JunitController {
     public IRecord sendData2(final String name, final String keys) {
         final IRecord rec = IRecord.REC("code", 0);
         final IRecord data = IRecord.REC("name", name, "keys", keys);
+        rec.add("data", data);
+        return rec;
+    }
+
+    /**
+     * http://localhost:8089/kvps/junit/sendData3
+     * 
+     * @param name 名称
+     * @param keys 键名列表
+     * @return IRecord
+     */
+    @RequestMapping(value = "sendData3", consumes = "multipart/form-data")
+    public IRecord sendData3(final String name, final String keys, final MultipartFile file) {
+        final IRecord rec = IRecord.REC("code", 0);
+        final IRecord data = IRecord.REC("name", name, "keys", keys, "file", file);
         rec.add("data", data);
         return rec;
     }
