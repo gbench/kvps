@@ -101,9 +101,9 @@ public class DataJunit {
     @Test
     public void qux() {
         final DataSource ds = ds(REC( //
-                "url", "jdbc:mysql://211.159.215.251:60302/itsm_whbank", //
+                "url", "jdbc:mysql://localhost:3306/itsm_whbank", //
                 "driver", "com.mysql.cj.jdbc.Driver", //
-                "user", "root"));
+                "user", "root", "password", "123456"));
         final DataApp dataMain = new DataApp(ds);
         dataMain.withTransaction(sess -> {
             final String sql = "select * from itsm_sys_user";
