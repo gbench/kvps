@@ -1,6 +1,12 @@
 package gbench.util.lisp;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Serializable;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -10,6 +16,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -195,6 +204,19 @@ public class MyRecord implements IRecord, Serializable {
         final Consumer<Iterable<Object>> put_iterable = iterable -> { // iterable 数据处理
             put_stream.accept(StreamSupport.stream(iterable.spliterator(), false));
         }; // put_iterable
+        final Function<String, IRecord> json_parse = line -> Optional.ofNullable(line) //
+                .map(String::trim).map(ln -> { //
+                    IRecord r = null;
+                    try { // 乐观锁 假设用户输入的是合法的json
+                        r = MyRecord.fromJson2(ln);
+                    } catch (Exception e) { // 非合法的json
+                        if (!(ln.startsWith("{") && ln.endsWith("}"))) { // 省略的 最外层的大括号
+                            final String _ln = IRecord.FT("{$0}", ln); // 补充外层括号
+                            r = MyRecord.fromJson(_ln);
+                        } // if
+                    } // try
+                    return r;
+                }).orElse(IRecord.REC()); // 尝试解析json
 
         if (n == 1) { // 单一参数情况
             final T single = kvs[0]; // 提取单值
@@ -223,28 +245,20 @@ public class MyRecord implements IRecord, Serializable {
                 put_stream.accept(stream);
             } else if (single instanceof String) { // 字符串类型的单个参数
                 final String line = single.toString();
-                final IRecord rec = Optional.ofNullable(line) //
-                        .map(String::trim).map(ln -> { //
-                            IRecord r = null;
-
-                            try { // 乐观锁 假设用户输入的是合法的json
-                                r = MyRecord.fromJson2(ln);
-                            } catch (Exception e) { // 非合法的json
-                                if (!(ln.startsWith("{") && ln.endsWith("}"))) { // 省略的 最外层的大括号
-                                    final String _ln = IRecord.FT("{$0}", ln); // 补充外层括号
-                                    r = MyRecord.fromJson(_ln);
-                                } // if
-                            } // try
-
-                            return r;
-                        }) //
-                        .orElse(IRecord.REC()); // 尝试解析json
-                if (rec != null) { //
-                    final Map<String, Object> _data = rec.toMap();
-                    if (_data.size() > 0) { // 非空数据
-                        data.putAll(_data);
+                if (url_pattern.matcher(line).matches()) {
+                    final String ln = send(line, null);
+                    IRecord.REC(ln).forEach((_k, _v) -> {
+                        data.put(_k, _v);
+                    });
+                } else {
+                    final IRecord rec = json_parse.apply(line);
+                    if (rec != null) { //
+                        final Map<String, Object> _data = rec.toMap();
+                        if (_data.size() > 0) { // 非空数据
+                            data.putAll(_data);
+                        } // if
                     } // if
-                } // if
+                } //
             } else { // if
                 // do nothing 省略其他单值情况
             } // if
@@ -257,5 +271,78 @@ public class MyRecord implements IRecord, Serializable {
         return new MyRecord(data);
     }
 
+    /**
+     * 简单的http 请求
+     * 
+     * @param url 请求url
+     * @return 请求返回结果
+     */
+    public static String send(final String url) {
+        return send(url, null);
+    }
+
+    /**
+     * 简单的http 请求
+     * 
+     * @param url    请求url
+     * @param params 请求参数
+     * @return 请求返回结果
+     */
+    public static String send(final String url, final IRecord params) {
+        String ret = null;
+        final IRecord _params = Optional.ofNullable(params).orElse(REC());
+        final IRecord __params = _params.tupleS().filter(e -> !e._1.startsWith("$")).collect(IRecord.recclc());
+        try {
+            final String content_type = _params.strOpt("$content_type").orElse(" application/json;charset:utf-8");
+            final String method = _params.strOpt("$method").orElse("GET").toUpperCase();
+            URL _url = new URL(url);
+            final  HttpURLConnection conn = (HttpURLConnection) _url.openConnection();
+            conn.setUseCaches(false);
+            conn.setRequestProperty("Content-Type", content_type);
+            conn.setDoOutput(true);
+            conn.setDoInput(true);
+            conn.setRequestMethod(method);// 设置请求方式为post
+            conn.connect();
+            final BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream(), "UTF-8"));
+            final String _content_type = Optional.ofNullable(content_type).map(e -> {
+                if (e.contains("application/json")) {
+                    return "json";
+                } else {
+                    return e;
+                }
+            }).orElse(""); // 内容类型
+            if (__params.size() > 0) {
+                if (method.equals("GET")) {
+                    // do nothing
+                } else { // 其他方法
+                    switch (_content_type) {
+                    case "json": { // json 格斯
+                        final String data = __params.json();
+                        bw.write(data);
+                        break;
+                    } // json
+                    default: { // 默认类型
+                        final String data = __params.tupleS().map(e -> IRecord.FT("$0=$1", e._1, e._2))
+                                .collect(Collectors.joining(","));
+                        bw.write(data);
+                    } // default
+                    } // switch
+                } // if method
+            } // if __params
+
+            bw.flush();
+            bw.close();
+            final BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "UTF-8"));
+            ret = br.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ret;
+    }
+
     private LinkedHashMap<String, Object> data = new LinkedHashMap<String, Object>();
+
+    final static Pattern url_pattern = Pattern
+            .compile("(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|]");
 }
