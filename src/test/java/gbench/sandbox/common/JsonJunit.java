@@ -64,6 +64,7 @@ public class JsonJunit {
         println(IRecord.REC(REC("name", "zhangsan", "sex", true).tuples()));
         println(IRecord.REC(REC("name", "zhangsan", "sex", true).toMap().entrySet().iterator()));
         println(IRecord.REC("name:'zhangsan',sex:false,postcode:200052")); // 省略括号的形式
+        println(IRecord.REC("name:[1,2,,,]")); // 省略值类型
     }
 
 }

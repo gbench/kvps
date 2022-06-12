@@ -100,7 +100,7 @@ public abstract class AbstractDeserializer<T> extends StdDeserializer<T> {
             } else if (jsnode.isNumber()) { // 数字类型
                 value = jsnode.numberValue(); //
             } else if (jsnode.isEmpty()) { // 空值
-                value = IRecord.REC("name", "-"); //
+                value = IRecord.REC("empty", true); // 空值类型
             } else if (jsnode.isNull()) { // 空值类型
                 value = null; //
             } else {

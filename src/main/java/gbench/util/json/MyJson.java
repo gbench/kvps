@@ -40,6 +40,9 @@ public class MyJson {
         final JsonMapper jm = JsonMapper.builder() //
                 .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true) // 允许省略字段名的引号
                 .configure(JsonReadFeature.ALLOW_TRAILING_COMMA, true) // 允许末尾保留逗号
+                .configure(JsonReadFeature.ALLOW_MISSING_VALUES, true) // 允许空值
+                .configure(JsonReadFeature.ALLOW_YAML_COMMENTS, true) // 允许yaml 注释
+                .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true) // 允许java 注释
                 .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true) // 允许单引号
                 .build(); //
 
