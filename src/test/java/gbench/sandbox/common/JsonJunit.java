@@ -85,8 +85,11 @@ public class JsonJunit {
     
     }
 
+    /**
+     * 扩展名
+     */
     @Test
-    public void ffo() {
+    public void qux() {
         final Function<String, String> filename_of = line -> {
             final Matcher matcher = Pattern.compile("([^/\\\\]+)$").matcher(line);
             final String name = matcher.find() ? matcher.group(1) : line;
