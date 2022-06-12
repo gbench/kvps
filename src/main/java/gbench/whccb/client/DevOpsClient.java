@@ -72,8 +72,15 @@ public class DevOpsClient extends MyHttpClient {
      * @return 时间戳对象id
      */
     public String oid() {
-        final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSSSSS");
-        return LocalDateTime.now().format(dtf);
+        synchronized (DevOpsClient.class) { // 保持时间同步
+            final DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMddhhmmssSSSSSSS");
+            try {
+                Thread.sleep(10); //
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            return LocalDateTime.now().format(dtf);
+        }
     }
 
     /**
