@@ -192,7 +192,7 @@ public class DataMatrix<T> {
      * @return U 类型的流
      */
     public <U> Stream<U> rowS(final Function<LinkedHashMap<String, T>, U> mapper) {
-        final String hh[] = this.keys().toArray(new String[0]);
+        final String[] hh = this.keys().toArray(new String[0]);
         final int hn = hh.length;// 表头长度
         @SuppressWarnings("unchecked")
         Function<LinkedHashMap<String, T>, U> final_mapper = mapper == null ? e -> (U) e : mapper;
@@ -498,7 +498,7 @@ public class DataMatrix<T> {
      * @return cells 元素类型
      */
     @SuppressWarnings("unchecked")
-    public static <U> Class<U> getGenericClass(final U cells[][], final Class<U> defaultClass) {
+    public static <U> Class<U> getGenericClass(final U[][] cells, final Class<U> defaultClass) {
         Class<U> uclass = (Class<U>) defaultClass;
         if (cells == null)
             return uclass;
@@ -522,7 +522,7 @@ public class DataMatrix<T> {
      * @return cells 元素类型
      */
     @SuppressWarnings("unchecked")
-    public static <U> Class<U> getGenericClass(final U cells[][]) {
+    public static <U> Class<U> getGenericClass(final U[][] cells) {
         return getGenericClass(cells, (Class<U>) Object.class);
     }
 
@@ -600,7 +600,7 @@ public class DataMatrix<T> {
      */
     public static String to_excel_name(final int n) {
         // 字母表
-        String alphabetics[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+        String[] alphabetics = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
         return nomenclature(n, alphabetics);
     }
 
