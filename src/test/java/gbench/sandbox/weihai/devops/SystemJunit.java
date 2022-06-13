@@ -73,5 +73,37 @@ public class SystemJunit extends DevOpsClient {
         // println(sysIdOf("ITSM"));
 
     }
+    
+    /**
+     * 系统创建
+     */
+    @Test
+    public void foo_create() {
+
+        // 创建系统
+        final IRecord sys_create_param = REC( //
+                "majorUserName", "zhangsan"// 主负责人账号 ？
+                , "oid", "ITSM" // 32位的纯数字 ：202111291751105649078
+                , "providerName", "上海速邦信息科技有限公司" //
+                , "systemCode", "ITSM", //
+                "systemName", "IT服务管理平台"); // systemName 必须唯一
+        Output.println(this.create(sys_create_param));
+
+        final IRecord resp = this.list();
+        final DFrame dfm = resp.llS("result").map(IRecord::REC).collect(DFrame.dfmclc);
+        println(dfm);
+        // println(sysIdOf("ITSM"));
+
+    }
+    
+    /**
+     * 查询系统列表
+     */
+    @Test
+    public void foo_list() {
+        final IRecord resp = this.list();
+        final DFrame dfm = resp.llS("result").map(IRecord::REC).collect(DFrame.dfmclc);
+        println(dfm);
+    }
 
 }

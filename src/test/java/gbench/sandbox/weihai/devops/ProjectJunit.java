@@ -35,7 +35,7 @@ public class ProjectJunit extends DevOpsClient {
     }
 
     @Test
-    public void foo() {
+    public void foo_create() {
         SystemJunit system = new SystemJunit();
         Output.println(system.optOf("ITSM"));
         final IRecord proj_param = REC( //
@@ -57,7 +57,7 @@ public class ProjectJunit extends DevOpsClient {
     }
     
     @Test
-    public void bar() {
+    public void foo_update() {
         SystemJunit system = new SystemJunit();
         Output.println(system.optOf("ITSM"));
         final IRecord proj_param = REC( //
