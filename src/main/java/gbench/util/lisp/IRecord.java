@@ -232,7 +232,7 @@ public interface IRecord extends Comparable<IRecord> {
     default <X, Y, T, U> U pathget(final String[] path, final BiFunction<String, X, Y> preprocessor,
                                    final Function<T, U> mapper) {
         final String key = path[0].trim();
-        final Integer len = path.length;
+        final int len = path.length;
 
         if (len > 1) {
             final IRecord _rec = this.rec(key, preprocessor);
@@ -341,7 +341,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @return 值数据流
      */
     default Stream<Object> valueS() {
-        return this.keys().stream().map(k -> this.get(k));
+        return this.keys().stream().map(this::get);
     }
 
     /**
@@ -764,7 +764,7 @@ public interface IRecord extends Comparable<IRecord> {
     default <T, U> Stream<U> llS(final String key, final Function<T, Stream<U>> streamer) {
         final Object value = this.get(key); // 提取数据值
 
-        return Optional.ofNullable(streamer.apply((T) value)).orElse(null);
+        return streamer.apply((T) value);
     }
 
     /**
@@ -897,13 +897,10 @@ public interface IRecord extends Comparable<IRecord> {
         if (kvs.length == 1) {
             final Object obj = kvs[0];
             if (obj instanceof IRecord) { // 记录类型
-                ((IRecord) obj).forEach((k, v) -> { // 可迭代类型
-                    this.add(k, v);
-                });
+                // 可迭代类型
+                ((IRecord) obj).forEach(this::add);
             } else if (obj instanceof Map) { // Map类型
-                ((Map<?, ?>) obj).forEach((k, v) -> {
-                    this.add(k + "", v);
-                });
+                ((Map<?, ?>) obj).forEach((k, v) -> this.add(k + "", v));
             } else if (obj instanceof Iterable) { // 可迭代类型
                 int i = 0; //
                 for (Object x : (Iterable<?>) obj) {
@@ -1045,9 +1042,7 @@ public interface IRecord extends Comparable<IRecord> {
         final int n = kk.size();
         final IRecord rec = this.build();
 
-        Arrays.stream(idices).filter(i -> i >= 0 && i < n).map(kk::get).forEach(key -> {
-            rec.add(key, this.get(key));
-        });
+        Arrays.stream(idices).filter(i -> i >= 0 && i < n).map(kk::get).forEach(key -> rec.add(key, this.get(key)));
 
         return rec;
     }
@@ -1191,7 +1186,7 @@ public interface IRecord extends Comparable<IRecord> {
         final List<Class<?>> classes = this.tupleS().map(x -> mapper.apply((X) x._2)).filter(Objects::nonNull)
                 .map(e -> (Class<Object>) e.getClass()).distinct().collect(Collectors.toList());
         final Class<?> clazz = classes.size() > 1 // 类型不唯一
-                ? classes.stream().allMatch(e -> Number.class.isAssignableFrom(e)) // 数字类型
+                ? classes.stream().allMatch(Number.class::isAssignableFrom) // 数字类型
                 ? Number.class // 数字类型
                 : Object.class // 节点类型
                 : classes.get(0); // 类型唯一
@@ -1247,9 +1242,7 @@ public interface IRecord extends Comparable<IRecord> {
      */
     default IRecord derive(final Object... tups) {
         final IRecord rec = this.duplicate(); // 复制品
-        IRecord.slidingS(Arrays.asList(tups), 2, 2, true).forEach(aa -> {
-            rec.add(aa.get(0).toString(), aa.get(1));
-        }); // forEach
+        IRecord.slidingS(Arrays.asList(tups), 2, 2, true).forEach(aa -> rec.add(aa.get(0).toString(), aa.get(1))); // forEach
         return rec;
     }
 
@@ -1274,7 +1267,7 @@ public interface IRecord extends Comparable<IRecord> {
      * 不存在则计算
      *
      * @param <T>    值类型
-     * @param @param idx 键名索引，从0开始
+     * @param idx    键名索引，从0开始
      * @param mapper 健名映射 k->t
      * @return T 类型的结果
      */
@@ -1285,7 +1278,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 不存在则计算
      *
-     * @param <T>
+     * @param <T>    mapper 结果类型
      * @param key    健名
      * @param mapper 健名映射 k->t
      * @return T 类型的结果
@@ -1301,8 +1294,8 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 不存在则计算
      *
-     * @param <T>
-     * @param @param idx 键名索引，从0开始
+     * @param <T>    mapper 结果类型
+     * @param idx    键名索引，从0开始
      * @param mapper 健名映射 k->t
      * @return T 类型的结果
      */
@@ -1317,7 +1310,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param keyer 键名生成器 (i:从0开始)->key
      * @return IRecord 构造器
      */
-    public static Builder rb(final int n, Function<Integer, ?> keyer) {
+    static Builder rb(final int n, Function<Integer, ?> keyer) {
 
         final List<?> keys = Stream.iterate(0, i -> i + 1).limit(n).map(keyer).collect(Collectors.toList());
         return new Builder(keys);
@@ -1331,7 +1324,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @return keys 为格式的 构建器
      */
     @SafeVarargs
-    public static <T> Builder rb(final T... keys) {
+    static <T> Builder rb(final T... keys) {
 
         final List<String> _keys = Arrays.asList(keys).stream().map(e -> e + "").collect(Collectors.toList());
         return new Builder(_keys);
@@ -1343,7 +1336,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param keys 键名序列, 用半角逗号 “,” 分隔
      * @return keys 为格式的 构建器
      */
-    public static Builder rb(final String keys) {
+    static Builder rb(final String keys) {
 
         return rb(keys.split(","));
     }
@@ -1354,7 +1347,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param keys 键名序列
      * @return keys 为格式的 构建器
      */
-    public static Builder rb(final String[] keys) {
+    static Builder rb(final String[] keys) {
 
         return rb(Arrays.asList(keys));
     }
@@ -1365,7 +1358,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param keys 键名序列
      * @return keys 为格式的 构建器
      */
-    public static <T> Builder rb(final Iterable<T> keys) {
+    static <T> Builder rb(final Iterable<T> keys) {
 
         return new Builder(keys);
     }
@@ -1378,7 +1371,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param tt       模版参数序列
      * @return template 被模版参数替换后的字符串
      */
-    public static String FT(final String template, final Object... tt) {
+    static String FT(final String template, final Object... tt) {
         final IRecord rec = IRecord.rb(tt.length, i -> "$" + i).get(tt);
         return fill_template(template, rec);
     }
@@ -1396,7 +1389,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param placeholder2values 关键词列表:占位符/key以及与之对应的值value集合
      * @return 把template中的占位符/key用placeholder2values中的值value给予替换
      */
-    public static String FT(final String template, final IRecord placeholder2values) {
+    static String FT(final String template, final IRecord placeholder2values) {
         return fill_template(template, placeholder2values);
     }
 
@@ -1412,7 +1405,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param placeholder2values 关键词列表:占位符/key以及与之对应的值value集合
      * @return 把template中的占位符/key用placeholder2values中的值value给予替换
      */
-    public static String fill_template(final String template, final IRecord placeholder2values) {
+    static String fill_template(final String template, final IRecord placeholder2values) {
 
         if (placeholder2values == null) { // 空值判断
             return template;
@@ -1473,7 +1466,7 @@ public interface IRecord extends Comparable<IRecord> {
      *            kvs 的只有一个元素，即 build(map0,map1) 会被视为 键值序列
      * @return 新生成的IRecord
      */
-    public static IRecord REC(final Object... kvs) {
+    static IRecord REC(final Object... kvs) {
         return MyRecord.REC(kvs); // 采用 MyRecord 来作为IRecord的默认实现函数
     }
 
@@ -1483,7 +1476,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param itr 可遍历结构
      * @return ArrayList结构的数据
      */
-    public static List<Object> iterable2list(final Iterable<?> itr, final Function<Object, Object> mapper) {
+    static List<Object> iterable2list(final Iterable<?> itr, final Function<Object, Object> mapper) {
         final List<Object> list = new ArrayList<>();
         itr.forEach(e -> {
             if (e instanceof Iterable) {
@@ -1569,7 +1562,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @return 列表结构
      */
     @SuppressWarnings("unchecked")
-    public static List<Object> asList(final Object value) {
+    static List<Object> asList(final Object value) {
 
         if (value instanceof List) {
             return ((List<Object>) value);
@@ -1608,13 +1601,9 @@ public interface IRecord extends Comparable<IRecord> {
             return LocalDateTime.ofInstant(instant, zoneId);
         };
 
-        final Function<Timestamp, LocalDateTime> timestamp2ldt = timestamp -> {
-            return lng2ldt.apply(timestamp.getTime());
-        };
+        final Function<Timestamp, LocalDateTime> timestamp2ldt = timestamp -> lng2ldt.apply(timestamp.getTime());
 
-        final Function<Date, LocalDateTime> dt2ldt = dt -> {
-            return lng2ldt.apply(dt.getTime());
-        };
+        final Function<Date, LocalDateTime> dt2ldt = dt -> lng2ldt.apply(dt.getTime());
 
         final Function<String, LocalTime> str2lt = line -> {
             LocalTime lt = null;
@@ -1733,7 +1722,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param flag 是否返回等长记录,true 数据等长 剔除 尾部的 不齐整（小于 size） 的元素,false 包含不齐整
      * @return 滑动窗口列表
      */
-    public static <T> Stream<List<T>> slidingS(final T[] aa, final int size, final int step, final boolean flag) {
+    static <T> Stream<List<T>> slidingS(final T[] aa, final int size, final int step, final boolean flag) {
 
         return IRecord.slidingS(Arrays.asList(aa), size, step, flag);
     }
@@ -1754,8 +1743,8 @@ public interface IRecord extends Comparable<IRecord> {
      * @param flag       是否返回等长记录,true 数据等长 剔除 尾部的 不齐整（小于 size） 的元素,false 包含不齐整
      * @return 滑动窗口列表
      */
-    public static <T> Stream<List<T>> slidingS(final Collection<T> collection, final int size, final int step,
-                                               final boolean flag) {
+    static <T> Stream<List<T>> slidingS(final Collection<T> collection, final int size, final int step,
+                                        final boolean flag) {
         final int n = collection.size();
         final ArrayList<T> arrayList = collection instanceof ArrayList // 类型检测
                 ? (ArrayList<T>) collection // 数组列表类型
@@ -1763,7 +1752,7 @@ public interface IRecord extends Comparable<IRecord> {
 
         // 当flag 为true 的时候 i的取值范围是: [0,n-size] <==> [0,n+1-size)
         return iterate(0, i -> i < (flag ? n + 1 - size : n), i -> i + step) // 序列生成
-                .map(i -> arrayList.subList(i, (i + size) > n ? n : (i + size)));
+                .map(i -> arrayList.subList(i, Math.min((i + size), n)));
     }
 
     /**
@@ -1804,7 +1793,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @return a new sequential {@code Stream}
      * @since 9
      */
-    public static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next) {
+    static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next) {
         Objects.requireNonNull(next);
         Objects.requireNonNull(hasNext);
         Spliterator<T> spliterator = new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE,
@@ -1856,8 +1845,8 @@ public interface IRecord extends Comparable<IRecord> {
      * @param keys 键名序列
      * @return keys 序列的比较器
      */
-    public static Comparator<IRecord> cmp(final List<String> keys) {
-        return IRecord.cmp(keys.stream().toArray(String[]::new), true);
+    static Comparator<IRecord> cmp(final List<String> keys) {
+        return IRecord.cmp(keys.toArray(new String[0]), true);
     }
 
     /**
@@ -1870,9 +1859,9 @@ public interface IRecord extends Comparable<IRecord> {
      * @param asc    是否升序,true 表示升序,小值在前,false 表示降序,大值在前
      * @return keys 序列的比较器
      */
-    public static <T, U extends Comparable<?>> Comparator<IRecord> cmp(final List<String> keys,
-                                                                       final BiFunction<String, T, U> mapper, final boolean asc) {
-        return IRecord.cmp(keys.stream().toArray(String[]::new), mapper, asc);
+    static <T, U extends Comparable<?>> Comparator<IRecord> cmp(final List<String> keys,
+                                                                final BiFunction<String, T, U> mapper, final boolean asc) {
+        return IRecord.cmp(keys.toArray(new String[0]), mapper, asc);
     }
 
     /**
@@ -1881,7 +1870,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param keys 键名序列
      * @return keys 序列的比较器
      */
-    public static Comparator<IRecord> cmp(final String keys[]) {
+    static Comparator<IRecord> cmp(final String[] keys) {
         return IRecord.cmp(keys, true);
     }
 
@@ -1892,7 +1881,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param asc  是否升序,true 表示升序,小值在前,false 表示降序,大值在前
      * @return keys 序列的比较器
      */
-    public static Comparator<IRecord> cmp(final String keys[], final boolean asc) {
+    static Comparator<IRecord> cmp(final String[] keys, final boolean asc) {
         return cmp(keys, null, asc);
     }
 
@@ -1907,8 +1896,8 @@ public interface IRecord extends Comparable<IRecord> {
      * @return keys 序列的比较器
      */
     @SuppressWarnings("unchecked")
-    public static <T, U extends Comparable<?>> Comparator<IRecord> cmp(final String keys[],
-                                                                       final BiFunction<String, T, U> mapper, final boolean asc) {
+    static <T, U extends Comparable<?>> Comparator<IRecord> cmp(final String[] keys,
+                                                                final BiFunction<String, T, U> mapper, final boolean asc) {
 
         final BiFunction<String, T, U> final_mapper = mapper == null
                 ? (String i, T o) -> o instanceof Comparable ? (U) o : (U) (o + "")
@@ -1995,7 +1984,7 @@ public interface IRecord extends Comparable<IRecord> {
      */
     static BinaryOperator<IRecord> plus() {
 
-        return IRecord.binaryOp((a, b) -> a + b);
+        return IRecord.binaryOp(Double::sum);
     }
 
     /**
@@ -2142,7 +2131,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param maxSize  最大的元素数量
      * @return 元素列表
      */
-    public static <T> List<T> itr2list(final Iterable<T> iterable, final int maxSize) {
+    static <T> List<T> itr2list(final Iterable<T> iterable, final int maxSize) {
 
         final Stream<T> stream = StreamSupport.stream(iterable.spliterator(), false).limit(maxSize);
         return stream.collect(Collectors.toList());
@@ -2155,7 +2144,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param iterable 可枚举类
      * @return 元素列表
      */
-    public static <T> List<T> itr2list(final Iterable<T> iterable) {
+    static <T> List<T> itr2list(final Iterable<T> iterable) {
 
         return IRecord.itr2list(iterable, MAX_SIZE);
     }
@@ -2166,7 +2155,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param <T> 元组值类型
      * @return IRecord类型的T元素归集器
      */
-    public static <T> Collector<Tuple2<String, T>, ?, IRecord> recclc() {
+    static <T> Collector<Tuple2<String, T>, ?, IRecord> recclc() {
         return IRecord.recclc(e -> e);
     }
 
@@ -2178,7 +2167,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param mapper Tuple2 类型的元素生成器 t->(str,u)
      * @return IRecord类型的T元素归集器
      */
-    public static <T, U> Collector<T, ?, IRecord> recclc(final Function<T, Tuple2<String, U>> mapper) {
+    static <T, U> Collector<T, ?, IRecord> recclc(final Function<T, Tuple2<String, U>> mapper) {
         return Collector.of((Supplier<List<T>>) ArrayList::new, List::add, (left, right) -> {
             left.addAll(right);
             return left;
@@ -2198,7 +2187,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param mapper Tuple2 类型的元素生成器 t->(k,u)
      * @return IRecord类型的T元素归集器
      */
-    public static <T, K, U> Collector<T, ?, Map<K, List<U>>> mapclc(final Function<T, Tuple2<K, U>> mapper) {
+    static <T, K, U> Collector<T, ?, Map<K, List<U>>> mapclc(final Function<T, Tuple2<K, U>> mapper) {
         return Collector.of((Supplier<Map<K, List<U>>>) HashMap::new, (tt, t) -> {
             final Tuple2<K, U> tup = mapper.apply(t);
             tt.computeIfAbsent(tup._1, _k -> new ArrayList<>()).add(tup._2);
@@ -2220,8 +2209,8 @@ public interface IRecord extends Comparable<IRecord> {
      * @param biop   二元运算算子 (u,u)->u
      * @return IRecord类型的T元素归集器
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> mapclc2(final Function<T, Tuple2<K, U>> mapper,
-                                                               final BinaryOperator<U> biop) {
+    static <T, K, U> Collector<T, ?, Map<K, U>> mapclc2(final Function<T, Tuple2<K, U>> mapper,
+                                                        final BinaryOperator<U> biop) {
         return Collector.of((Supplier<Map<K, List<U>>>) HashMap::new, (tt, t) -> {
             final Tuple2<K, U> tup = mapper.apply(t);
             tt.computeIfAbsent(tup._1, _k -> new ArrayList<>()).add(tup._2);
@@ -2247,7 +2236,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @param mapper Tuple2 类型的元素生成器 t->(k,u)
      * @return IRecord类型的T元素归集器
      */
-    public static <T, K, U> Collector<T, ?, Map<K, U>> mapclc2(final Function<T, Tuple2<K, U>> mapper) {
+    static <T, K, U> Collector<T, ?, Map<K, U>> mapclc2(final Function<T, Tuple2<K, U>> mapper) {
         return IRecord.mapclc2(mapper, (a, b) -> b); // 使用新值覆盖老值。
     }
 
@@ -2258,21 +2247,21 @@ public interface IRecord extends Comparable<IRecord> {
      * @param <T> 元素类型
      * @return IRecord类型的T元素归集器
      */
-    public static <K, T> Collector<? super Tuple2<K, T>, ?, Map<K, T>> mapclc2() {
+    static <K, T> Collector<? super Tuple2<K, T>, ?, Map<K, T>> mapclc2() {
         return IRecord.mapclc2(e -> e, (a, b) -> b); // 使用新值覆盖老值。
     }
 
     /**
      * 最大数字数量,默认为10000
      */
-    public static int MAX_SIZE = 10000; // 最大的数量
+    int MAX_SIZE = 10000; // 最大的数量
 
     /**
      * IRecord 构建器
      *
      * @author gbench
      */
-    public static class Builder {
+    class Builder {
 
         /**
          * 构造IRecord构造器
