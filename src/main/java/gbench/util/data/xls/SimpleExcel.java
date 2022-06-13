@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -729,10 +730,15 @@ public class SimpleExcel implements AutoCloseable {
             return null;
         }
 
+        final BiFunction<String,Number,String> repeat = (s, n)->{
+            return Stream.iterate(0,i->i+1).limit(n.intValue()).map(e->s).collect(Collectors.joining());
+        };
+
         final Function<Cell, String> strcell = c -> { // 元素值的字符串
             final CellStyle style = c.getCellStyle();
             final short count = style.getIndention(); // 缩进数量
-            return "\t".repeat(count) + c.getStringCellValue(); // 数据格式化
+
+            return repeat.apply("\t",count) + c.getStringCellValue(); // 数据格式化
         };
 
         final CellType cellType = cell.getCellType();

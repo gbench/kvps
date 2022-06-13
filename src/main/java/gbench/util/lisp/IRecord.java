@@ -9,29 +9,9 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
+import java.util.function.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,15 +19,14 @@ import java.util.stream.StreamSupport;
 
 /**
  * 数据记录对象
- * 
- * @author xuqinghua
  *
+ * @author xuqinghua
  */
 public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 根据键名进行取值
-     * 
+     *
      * @param key 键名
      * @return 键key的值
      */
@@ -55,7 +34,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 设置键，若 key 与 老的 键 相同则 覆盖 老的值
-     * 
+     *
      * @param key   新的 键名
      * @param value 键值
      * @return 对象本身
@@ -64,7 +43,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 除掉键 key 的值
-     * 
+     *
      * @param key 新的 键名
      * @return 对象本身(移除了key)
      */
@@ -72,21 +51,21 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 转换成json 字符串
-     * 
+     *
      * @return json 字符串
      */
     String json();
 
     /**
      * 数据复制
-     * 
+     *
      * @return 当前对象的拷贝
      */
     IRecord duplicate();
 
     /**
      * 构建一个键名键值序列 指定的 IRecord
-     * 
+     *
      * @param kvs Map结构（IRecord也是Map结构） 或是 键名,键值 序列。即 build(map) 或是
      *            build(key0,value0,key1,vlaue1,...) 的 形式， 特别注意 build(map) 时候，当且仅当
      *            kvs 的只有一个元素，即 build(map0,map1) 会被视为 键值序列
@@ -96,7 +75,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 键名序列
-     * 
+     *
      * @return 键名列表
      */
     List<String> keys();
@@ -104,14 +83,14 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 返回一个 Map 结构<br>
      * 非递归进行变换
-     * 
+     *
      * @return 一个 键值 对儿 的 列表 [(key,map)]
      */
     Map<String, Object> toMap();
 
     /**
      * 键名序列
-     * 
+     *
      * @return 键名列表
      */
     default Stream<String> keyS() {
@@ -120,7 +99,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回一个 Map 结构,递归遍历<br>
-     * 
+     *
      * @return 一个 键值 对儿 的 列表 [(key,map)]
      */
     default Map<String, Object> toMap2() {
@@ -131,8 +110,7 @@ public interface IRecord extends Comparable<IRecord> {
                         e -> e instanceof IRecord ? ((IRecord) e).toMap2() : e);
                 data.put(key, value_ll);
             } else if (value instanceof Stream) {
-                @SuppressWarnings("unchecked")
-                final List<?> value_ll = ((Stream<Object>) value) //
+                @SuppressWarnings("unchecked") final List<?> value_ll = ((Stream<Object>) value) //
                         .map(e -> e instanceof IRecord ? ((IRecord) e).toMap2() : e) //
                         .collect(Collectors.toList());
                 data.put(key, value_ll);
@@ -148,18 +126,18 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 数据元素便利访问
-     * 
+     *
      * @param action 遍历的回调函数 (key,value)->{}
      * @return this 对象本身。
      */
-    public default IRecord forEach(BiConsumer<String, Object> action) {
+    default IRecord forEach(BiConsumer<String, Object> action) {
         this.toMap().forEach(action);
         return this;
     }
 
     /**
      * 设置键，若 idx 与 老的 键 相同则 覆盖 老的值
-     * 
+     *
      * @param idx   键名索引，从0开始
      * @param value 数值
      * @return this 对象本身
@@ -174,14 +152,13 @@ public interface IRecord extends Comparable<IRecord> {
      * 构造 IRecord <br>
      * 按照构建器的 键名序列表，依次把objs中的元素与其适配以生成 IRecord <br>
      * {key0:objs[0],key1:objs[1],key2:objs[2],...}
-     * 
-     * @param <T>  元素类型
+     *
      * @param objs 值序列, 若 objs 为 null 则返回null, <br>
      *             若 objs 长度不足以匹配 keys 将采用 循环补位的仿制给予填充 <br>
      *             若 objs 长度为0则返回一个空对象{},注意是没有元素且不是null的对象
      * @return IRecord 对象 若 objs 为 null 则返回null
      */
-    default public IRecord get(final Object... objs) {
+    default IRecord get(final Object... objs) {
         if (objs == null) { // 空值判断
             return null;
         }
@@ -202,9 +179,9 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 提取record类型的结果 <br>
-     * 
+     * <p>
      * 可以识别的值类型IRecord,Map,Collection,Array其中Collection和Array 的 key为索引序号，从开始
-     * 
+     *
      * @param <X>          源数据类型
      * @param <Y>          目标数据类型,即 IRecord,Map,Collection,Array 其中之一
      * @param key          键名
@@ -241,7 +218,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 根据路径提取数据
-     * 
+     *
      * @param <X>          元素类型
      * @param <Y>          元素类型，需要为IRecord,Map,Collection,Array其中Collection和Array任一
      * @param <T>          元素类型
@@ -253,8 +230,8 @@ public interface IRecord extends Comparable<IRecord> {
      */
     @SuppressWarnings("unchecked")
     default <X, Y, T, U> U pathget(final String[] path, final BiFunction<String, X, Y> preprocessor,
-            final Function<T, U> mapper) {
-        final String key = path[0].strip();
+                                   final Function<T, U> mapper) {
+        final String key = path[0].trim();
         final Integer len = path.length;
 
         if (len > 1) {
@@ -268,9 +245,9 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 根据路径提取数据 <br>
-     * 
+     * <p>
      * 可以识别的值类型IRecord,Map,Collection,Array其中Collection和Array 的 key为索引序号，从开始
-     * 
+     *
      * @param <X>          元素类型
      * @param <Y>          元素类型Y 需要为
      *                     IRecord,Map,Collection,Array其中Collection和Array任一
@@ -282,13 +259,13 @@ public interface IRecord extends Comparable<IRecord> {
      * @return U类型的值
      */
     default <X, Y, T, U> U pathget(final String path, final BiFunction<String, X, Y> preprocessor,
-            final Function<T, U> mapper) {
+                                   final Function<T, U> mapper) {
         return this.pathget(path.split("[/,]+"), preprocessor, mapper);
     }
 
     /**
      * 根据路径提取数据
-     * 
+     *
      * @param <T>    元素类型
      * @param <U>    结果类型
      * @param path   键名路径 如 a/b/c
@@ -301,7 +278,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 根据路径提取数据
-     * 
+     *
      * @param <T>      键值变换函数的源类型
      * @param <U>      键值变换函数的目标类型
      * @param path     键名路径 如 a/b/c
@@ -314,9 +291,9 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 根据路径提取数据
-     * 
+     *
      * @param path 键名路径 如 a/b/c
-     * @return 元素对象流,路径不存在或是值为null的时候返回null值
+     * @return 元素对象流, 路径不存在或是值为null的时候返回null值
      */
     default Stream<Object> pathllS(final String path) {
         return this.pathllS(path, e -> Optional.ofNullable(e).map(IRecord::asList).map(List::stream).orElse(null));
@@ -324,7 +301,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把idx转key
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return 索引转键名
      */
@@ -336,7 +313,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 键名索引
-     * 
+     *
      * @param key 键名
      * @return 键名索引 从0开始, key 为null 时返回null
      */
@@ -360,9 +337,8 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回值数据流
-     * 
+     *
      * @return 值数据流
-     * 
      */
     default Stream<Object> valueS() {
         return this.keys().stream().map(k -> this.get(k));
@@ -370,9 +346,8 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回值列表
-     * 
+     *
      * @return 值列表
-     * 
      */
     default List<Object> values() {
         return this.valueS().collect(Collectors.toList());
@@ -381,21 +356,20 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 带有缺省值计算的值获取函数，<br>
      * defaultEvaluator 计算的结果并不给予更新到this当中。这是与computeIfAbsent不同的。
-     * 
+     *
      * @param <T>              返回值类型
      * @param key              键名
      * @param defaultEvaluator 缺省值计算函数(key)->obj
      * @return 缺值计算的值
      */
     default <T> T get(final String key, Function<String, T> defaultEvaluator) {
-        @SuppressWarnings("unchecked")
-        final T t = (T) this.get(key);
+        @SuppressWarnings("unchecked") final T t = (T) this.get(key);
         return Optional.ofNullable(t).orElse(defaultEvaluator.apply(key));
     }
 
     /**
      * 提取键名所标定的值
-     * 
+     *
      * @param key 键名
      * @return Optional 的键值
      */
@@ -405,7 +379,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 提取键名索引所标定的值
-     * 
+     *
      * @param idx 键名索引，从0开始
      * @return Optional 的键值
      */
@@ -415,27 +389,27 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把key列转换成逻辑值
-     * 
+     *
      * @param idx 键名索引,从0开始
      * @return 布尔类型
      */
     default Boolean bool(final Integer idx) {
         return this.bool(this.keyOf(idx));
-    };
+    }
 
     /**
      * 把key列转换成逻辑值
-     * 
+     *
      * @param key 键名
      * @return 布尔类型
      */
     default Boolean bool(final String key) {
         return this.get(key, o -> Boolean.parseBoolean(o + ""));
-    };
+    }
 
     /**
      * 把key列转换成逻辑值
-     * 
+     *
      * @param key           键名
      * @param default_value 默认值
      * @return 布尔类型
@@ -443,11 +417,11 @@ public interface IRecord extends Comparable<IRecord> {
     default Boolean bool(final String key, final Boolean default_value) {
         final Boolean b = this.bool(key);
         return b == null ? default_value : b;
-    };
+    }
 
     /**
      * 返回 建明索引 所对应的 键值, Boolean 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值 Optional
      */
@@ -457,7 +431,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Boolean 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值 Optional
      */
@@ -467,7 +441,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Integer 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值
      */
@@ -477,7 +451,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 键名索引 所对应的 键值, Integer 类型
-     * 
+     *
      * @param idx 键名索引 从0开始 从0开始
      * @return idx 所标定的 值
      */
@@ -487,7 +461,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, Integer 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值 Optional
      */
@@ -497,7 +471,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Integer 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值 Optional
      */
@@ -507,7 +481,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Integer 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值
      */
@@ -517,7 +491,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 键名索引 所对应的 键值, Integer 类型
-     * 
+     *
      * @param idx 键名索引 从0开始 从0开始
      * @return idx 所标定的 值
      */
@@ -527,7 +501,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, Long 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值 Optional
      */
@@ -537,7 +511,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Long 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值 Optional
      */
@@ -547,7 +521,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Double 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值
      */
@@ -557,8 +531,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Double 类型
-     * 
-     * @param idx 键名索引 从0开始
+     *
      * @return idx 所标定的 值
      */
     default Double dbl(int key) {
@@ -567,7 +540,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, Double 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值 Optional
      */
@@ -577,7 +550,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, Double 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值 Optional
      */
@@ -587,7 +560,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, LocalDateTime 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值
      */
@@ -597,7 +570,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, LocalDateTime 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值
      */
@@ -607,7 +580,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, LocalDateTime 类型
-     * 
+     *
      * @param key          键名
      * @param defaultValue 默认值
      * @return key 所标定的 值
@@ -625,7 +598,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, LocalDateTime 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值 Optional
      */
@@ -635,7 +608,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, LocalDateTime 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值 Optional
      */
@@ -645,7 +618,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, LocalDateTime 类型
-     * 
+     *
      * @param idx          键名索引
      * @param defaultValue 默认值
      * @return key 所标定的 值
@@ -656,7 +629,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, String 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值
      */
@@ -666,7 +639,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, String 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值
      */
@@ -682,7 +655,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 建明索引 所对应的 键值, String 类型
-     * 
+     *
      * @param idx 键名索引 从0开始
      * @return idx 所标定的 值 Optional
      */
@@ -692,7 +665,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 返回 key 所对应的 键值, String 类型
-     * 
+     *
      * @param key 键名
      * @return key 所标定的 值 Optional
      */
@@ -703,13 +676,12 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把 键名元素的值转换为 列表结构 <br>
      * lla 是 LinkedList apply 的含义，取意为 应用方法 获得 链表
-     * 
+     *
      * @param <T>    源数据类型
      * @param <U>    目标列表元素的数据类型
      * @param key    键名
      * @param lister 列表构建器 t->[u]
-     * 
-     * @return 列表结构的数据,U 类型的列表 [u]
+     * @return 列表结构的数据, U 类型的列表 [u]
      */
     @SuppressWarnings("unchecked")
     default <T, U> List<U> lla(final String key, final Function<T, List<U>> lister) {
@@ -721,13 +693,12 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把 键名索引 元素的值转换为 列表结构<br>
      * lla 是 LinkedList apply 的含义，取意为 应用方法 获得 链表
-     * 
+     *
      * @param <T>    源数据类型
      * @param <U>    目标列表元素的数据类型
      * @param idx    键名索引 从0开始
      * @param lister 列表构建器 t->[u]
-     * 
-     * @return 列表结构的数据,U 类型的列表 [u]
+     * @return 列表结构的数据, U 类型的列表 [u]
      */
     default <T, U> List<Object> lla(final int idx, final Function<T, List<U>> lister) {
         return this.lla(this.keyOf(idx));
@@ -736,9 +707,8 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把 键名元素的值转换为 列表结构 <br>
      * lla 是 LinkedList apply 的含义，取意为 应用方法 获得 链表
-     * 
+     *
      * @param key 键名
-     * 
      * @return 列表结构的数据
      */
     default List<Object> lla(final String key) {
@@ -747,9 +717,8 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名索引 元素的值转换为 列表结构
-     * 
+     *
      * @param idx 键名索引 从0开始
-     * 
      * @return 列表结构的数据
      */
     default List<Object> lla(final int idx) {
@@ -758,7 +727,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名索引 元素的值转换为 元素列表
-     * 
+     *
      * @param <T>    键值变换函数的源类型
      * @param <U>    键值变换函数的目标类型
      * @param key    键名
@@ -771,10 +740,9 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名索引 元素的值转换为 元素列表
-     * 
+     *
      * @param <T>    键值变换函数的源类型
      * @param <U>    键值变换函数的目标类型
-     * @param key    键名索引 从0开始
      * @param mapper 键值变换函数 t->u
      * @return U类型的 元素列表
      */
@@ -785,12 +753,11 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把 键名元素的值转换为 元素对象流 <br>
      * llS 是 LinkedList Stream 的 缩写 根据 lla 的变体,S 表示这是一个 返回 Stream类型的函数
-     * 
+     *
      * @param <T>      源数据类型
      * @param <U>      目标列表元素的数据类型
      * @param key      键名
      * @param streamer 元素对象流构建器 t->[u]
-     * 
      * @return U 类型的元素对象流 [u]
      */
     @SuppressWarnings("unchecked")
@@ -803,12 +770,11 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把 键名索引 元素的值转换为 元素对象流 <br>
      * llS 是 LinkedList Stream 的 缩写 根据 lla 的变体,S 表示这是一个 返回 Stream类型的函数
-     * 
+     *
      * @param <T>      源数据类型
      * @param <U>      目标列表元素的数据类型
      * @param idx      键名索引 从0开始
      * @param streamer 元素对象流构建器 t->[u]
-     * 
      * @return U 类型的元素对象流 [u]
      */
     default <T, U> Stream<U> llS(final int idx, final Function<T, Stream<U>> streamer) {
@@ -817,11 +783,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名 元素的值转换为 元素对象流
-     * 
+     * <p>
      * llS 是 LinkedList Stream 的 缩写 根据 lla 的变体,S 表示这是一个 返回 Stream类型的函数
-     * 
+     *
      * @param key 键名
-     * 
      * @return 元素对象流
      */
     default Stream<Object> llS(final String key) {
@@ -830,9 +795,8 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名索引 元素的值转换为 元素对象流
-     * 
+     *
      * @param idx 键名索引 从0开始
-     * 
      * @return 元素对象流
      */
     default Stream<Object> llS(final int idx) {
@@ -841,7 +805,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名 元素的值转换为 元素对象流
-     * 
+     *
      * @param <T>    键值变换函数的源类型
      * @param <U>    键值变换函数的目标类型
      * @param key    键名
@@ -855,10 +819,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名索引 元素的值转换为 元素对象流
-     * 
+     *
      * @param <T>    键值变换函数的源类型
      * @param <U>    键值变换函数的目标类型
-     * @param key    键名索引 从0开始
+     * @param idx    键名索引 从0开始
      * @param mapper 键值变换函数 t->u
      * @return U类型的元素对象流
      */
@@ -868,7 +832,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名 元素的值转换为 元素对象流
-     * 
+     *
      * @param <T>    键值变换函数的源类型
      * @param <U>    键值变换函数的目标类型
      * @param key    键名
@@ -884,10 +848,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 键名索引 元素的值转换为 元素对象流
-     * 
+     *
      * @param <T>    键值变换函数的源类型
      * @param <U>    键值变换函数的目标类型
-     * @param key    键名索引 从0开始
+     * @param idx    键名索引 从0开始
      * @param mapper 键值变换函数 t->u
      * @return U类型的元素对象流 的 Optional
      */
@@ -898,7 +862,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 更新式添加<br>
      * 增加新键，若 key 与 老的 键 相同则 覆盖 老的值
-     * 
+     *
      * @param key   新的 键名
      * @param value 新的 键值
      * @return 对象本身
@@ -911,7 +875,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 更新式添加,即改变自身的内容<br>
      * 增加新键，若 key 与 老的 键 相同则 覆盖 老的值
-     * 
+     *
      * @param tup 待添加的键值对
      * @return 对象本身
      */
@@ -925,7 +889,7 @@ public interface IRecord extends Comparable<IRecord> {
      * 若 kvs 长度为 1 <br>
      * 1) IRecord 或 Map 类型 根据 (键,值) 序列给予 元素添加 <br>
      * 2) Iterable 类型 索引序号（从0开始）为 键名, 元素值 进行 (键,值)序列添加
-     * 
+     *
      * @param kvs 键名键值序列
      * @return 对象本身
      */
@@ -962,7 +926,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 对键 key 应用函数 mapper
-     * 
+     *
      * @param <T>    键值类型
      * @param <U>    结果类型
      * @param key    键名
@@ -976,7 +940,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 对键索引 idx 应用函数 mapper
-     * 
+     *
      * @param <T>    键值类型
      * @param <U>    结果类型
      * @param idx    键名
@@ -1023,7 +987,7 @@ public interface IRecord extends Comparable<IRecord> {
      *
      * @param rec the reference object with which to compare.
      * @return {@code true} if this object is the same as the obj argument;
-     *         {@code false} otherwise.
+     * {@code false} otherwise.
      * @see #hashCode()
      * @see java.util.HashMap
      */
@@ -1033,7 +997,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 元素个数
-     * 
+     *
      * @return 元素个数
      */
     default int size() {
@@ -1062,7 +1026,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 肯定过滤
-     * 
+     *
      * @param predicate 谓词判断函数 tuple2->boolean
      * @return 新生的IRecord
      */
@@ -1072,8 +1036,8 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 肯定过滤
-     * 
-     * @param keys 保留的键名索引序列，键名索引从0开始
+     *
+     * @param idices 保留的键名索引序列，键名索引从0开始
      * @return 新生的IRecord
      */
     default IRecord filter(final Integer... idices) {
@@ -1090,7 +1054,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 肯定过滤
-     * 
+     *
      * @param keys 保留的键名序列，键名之间采用半角逗号分隔
      * @return 新生的IRecord
      */
@@ -1100,7 +1064,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 肯定过滤
-     * 
+     *
      * @param keys 保留的键名序列
      * @return 新生的IRecord
      */
@@ -1110,7 +1074,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 肯定过滤
-     * 
+     *
      * @param keys 保留的键名序列
      * @return 新生的IRecord
      */
@@ -1118,7 +1082,7 @@ public interface IRecord extends Comparable<IRecord> {
         final IRecord rec = this.build();
 
         keys.forEach(key -> {
-            final String _key = key.strip();
+            final String _key = key.trim();
             final Object value = this.get(_key);
             if (value != null) {
                 rec.add(key, value);
@@ -1130,14 +1094,14 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 否定过滤
-     * 
+     *
      * @param idices 剔除的键名索引序列，键名索引从0开始
      * @return 新生的IRecord
      */
     default IRecord filterNot(final Integer... idices) {
         final int n = this.size();
         final List<Integer> ids = Arrays.asList(idices);
-        final Integer[] _indices = Stream.iterate(0, i -> i < n, i -> i + 1).filter(i -> !ids.contains(i))
+        final Integer[] _indices = Stream.iterate(0, i -> i + 1).limit(n).filter(i -> !ids.contains(i))
                 .toArray(Integer[]::new);
 
         return this.filter(_indices);
@@ -1145,7 +1109,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 否定过滤
-     * 
+     *
      * @param keys 剔除的键名序列，键名之间采用半角逗号分隔
      * @return 新生的IRecord
      */
@@ -1155,7 +1119,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 否定过滤
-     * 
+     *
      * @param keys 剔除的键名序列
      * @return 新生的IRecord
      */
@@ -1165,7 +1129,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 否定过滤
-     * 
+     *
      * @param keys 剔除的键名序列
      * @return 新生的IRecord
      */
@@ -1176,7 +1140,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 转换成 tuple2 的 列表结构
-     * 
+     *
      * @return tuple的 列表结构 [(k,v)]
      */
     default List<Tuple2<String, Object>> tuples() {
@@ -1185,7 +1149,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 转换成 tuple2 的 流式结构
-     * 
+     *
      * @return tuple的流结构 [(k,v)]
      */
     default Stream<Tuple2<String, Object>> tupleS() {
@@ -1194,7 +1158,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 键名过滤
-     * 
+     *
      * @param bipredicate 过滤函数 (key,value)->bool, true 值保留, false 剔除
      * @return 新生的IRecord
      */
@@ -1207,7 +1171,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 IRecord 值转换成 Object 一维数组
-     * 
+     *
      * @return Object 一维数组
      */
     default Object[] toArray() {
@@ -1216,7 +1180,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 IRecord 值转换成 数组结构
-     * 
+     *
      * @param <X>    mapper 参数类型
      * @param <T>    mapper 值类型
      * @param mapper 值的变换函数 x->t
@@ -1228,8 +1192,8 @@ public interface IRecord extends Comparable<IRecord> {
                 .map(e -> (Class<Object>) e.getClass()).distinct().collect(Collectors.toList());
         final Class<?> clazz = classes.size() > 1 // 类型不唯一
                 ? classes.stream().allMatch(e -> Number.class.isAssignableFrom(e)) // 数字类型
-                        ? Number.class // 数字类型
-                        : Object.class // 节点类型
+                ? Number.class // 数字类型
+                : Object.class // 节点类型
                 : classes.get(0); // 类型唯一
         return this.tupleS().map(x -> mapper.apply((X) x._2)).toArray(n -> (T[]) Array.newInstance(clazz, n));
     }
@@ -1238,13 +1202,13 @@ public interface IRecord extends Comparable<IRecord> {
      * 智能版的数组转换 <br>
      * 视键值对儿kvp的值为单值类型(非集合类型[比如List,Set,HashMap等]),比如 <br>
      * Integer,Long,Double等，把当前集合中的值集合转换成 一维数组<br>
-     * 
+     * <p>
      * 使用示例：<br>
      * IRecord.rb("name,birth,marry") // 档案结构 <br>
      * .get("zhangsan,19810713,20011023".split(",")) // 构建张三的数据记录 <br>
      * .arrayOf("birth,marry",IRecord::asLocalDate, // 把 出生日期和结婚日期转换为日期类型 <br>
      * ldts->ldts[0].until(ldts[1]).getYears()); // 计算张三的结婚年龄 <br>
-     * 
+     *
      * @param <T>    数组的元素类型
      * @param <U>    mapper 目标元素的类型
      * @param mapper [t]->u 数组变换函数
@@ -1266,7 +1230,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 非更新式添加,即在一个复制品上添加新的键值数据<br>
      * 添加键值对数据
-     * 
+     *
      * @param rec 键值对集合
      * @return 添加了新的减值数据的复制品
      */
@@ -1277,7 +1241,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 非更新式添加,即在一个复制品上添加新的键值数据<br>
      * 添加键值对数据
-     * 
+     *
      * @param tups 键值对集合
      * @return 添加了新的减值数据的复制品
      */
@@ -1291,7 +1255,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 不存在则计算
-     * 
+     *
      * @param <T>    值类型
      * @param key    健名
      * @param mapper 健名映射 k->t
@@ -1308,7 +1272,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 不存在则计算
-     * 
+     *
      * @param <T>    值类型
      * @param @param idx 键名索引，从0开始
      * @param mapper 健名映射 k->t
@@ -1320,7 +1284,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 不存在则计算
-     * 
+     *
      * @param <T>
      * @param key    健名
      * @param mapper 健名映射 k->t
@@ -1336,7 +1300,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 不存在则计算
-     * 
+     *
      * @param <T>
      * @param @param idx 键名索引，从0开始
      * @param mapper 健名映射 k->t
@@ -1348,21 +1312,21 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成 构建器
-     * 
+     *
      * @param n     键数量,正整数
      * @param keyer 键名生成器 (i:从0开始)->key
      * @return IRecord 构造器
      */
     public static Builder rb(final int n, Function<Integer, ?> keyer) {
 
-        final List<?> keys = Stream.iterate(0, i -> i < n, i -> i + 1).map(keyer).collect(Collectors.toList());
+        final List<?> keys = Stream.iterate(0, i -> i + 1).limit(n).map(keyer).collect(Collectors.toList());
         return new Builder(keys);
     }
 
     /**
      * 生成 构建器
-     * 
-     * @param K    元素类型
+     *
+     * @param <T>  元素类型
      * @param keys 键名序列
      * @return keys 为格式的 构建器
      */
@@ -1375,7 +1339,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成 构建器
-     * 
+     *
      * @param keys 键名序列, 用半角逗号 “,” 分隔
      * @return keys 为格式的 构建器
      */
@@ -1386,7 +1350,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成 构建器
-     * 
+     *
      * @param keys 键名序列
      * @return keys 为格式的 构建器
      */
@@ -1397,7 +1361,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成 构建器
-     * 
+     *
      * @param keys 键名序列
      * @return keys 为格式的 构建器
      */
@@ -1409,7 +1373,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * fill_template 的别名<br>
      * Term.FT("$0+$1=$2",1,2,3) 替换后的结果为 1+2=3
-     * 
+     *
      * @param template 模版字符串，占位符$0,$1,$2,...
      * @param tt       模版参数序列
      * @return template 被模版参数替换后的字符串
@@ -1427,7 +1391,7 @@ public interface IRecord extends Comparable<IRecord> {
      * 例如 : FT("insert into tblname$ (name,sex) values
      * (#name,#sex)",REC("tblname$","user","#name","张三","#sex","男")) <br>
      * 返回: insert into user (name,sex) values ('张三','男') <br>
-     * 
+     *
      * @param template           模版字符串
      * @param placeholder2values 关键词列表:占位符/key以及与之对应的值value集合
      * @return 把template中的占位符/key用placeholder2values中的值value给予替换
@@ -1443,7 +1407,7 @@ public interface IRecord extends Comparable<IRecord> {
      * 例如 : fill_template("insert into tblname$ (name,sex) values
      * (#name,#sex)",REC("tblname$","user","#name","张三","#sex","男")) <br>
      * 返回: insert into user (name,sex) values ('张三','男') <br>
-     * 
+     *
      * @param template           模版字符串
      * @param placeholder2values 关键词列表:占位符/key以及与之对应的值value集合
      * @return 把template中的占位符/key用placeholder2values中的值value给予替换
@@ -1503,7 +1467,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 构建一个键名键值序列 指定的 IRecord
-     * 
+     *
      * @param kvs Map结构（IRecord也是Map结构） 或是 键名,键值 序列。即 build(map) 或是
      *            build(key0,value0,key1,vlaue1,...) 的 形式， 特别注意 build(map) 时候，当且仅当
      *            kvs 的只有一个元素，即 build(map0,map1) 会被视为 键值序列
@@ -1515,8 +1479,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把 一个 Iterable 对象 转换成 List 结构
-     * 
-     * @param <T> 元素类型
+     *
      * @param itr 可遍历结构
      * @return ArrayList结构的数据
      */
@@ -1537,7 +1500,7 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把一个数据对象转换为浮点数<br>
      * 对于 非法的数字类型 返回 null
-     * 
+     *
      * @param <T> 函数的参数类型
      * @return t->dbl
      */
@@ -1548,11 +1511,11 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把一个数据对象转换为浮点数<br>
      * 对于 非法的数字类型 返回 defaultValue <br>
-     * 
+     * <p>
      * 默认会尝试把时间类型也解释为数字,即 '1970-01-01 08:00:01' <br>
      * 也会被转换成一个 0时区 的 从1970年1月1 即 epoch time 以来的毫秒数<br>
      * 对于 中国 而言 位于+8时区, '1970-01-01 08:00:01' 会被解析为1000
-     * 
+     *
      * @param <T>          函数的参数类型
      * @param defaultValue 非法的数字类型 返回 的默认值
      * @return t->dbl
@@ -1564,11 +1527,11 @@ public interface IRecord extends Comparable<IRecord> {
     /**
      * 把一个数据对象转换为浮点数<br>
      * 对于 非法的数字类型 返回 defaultValue
-     * 
+     * <p>
      * 默认会尝试把时间类型也解释为数字,即 '1970-01-01 08:00:01' <br>
      * 也会被转换成一个 0时区 的 从1970年1月1 即 epoch time 以来的毫秒数<br>
      * 对于 中国 而言 位于+8时区, '1970-01-01 08:00:01' 会被解析为1000
-     * 
+     *
      * @param <T>          函数的参数类型
      * @param defaultValue 非法的数字类型 返回 的默认值
      * @param timeflag     是否对时间类型数据进行转换, true 表示 开启,'1970-01-01 08:00:01'将会被解析为
@@ -1601,7 +1564,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把值对象转化成列表结构
-     * 
+     *
      * @param value 值对象
      * @return 列表结构
      */
@@ -1631,7 +1594,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 把一个值对象转换成LocalDateTime
-     * 
+     *
      * @param value 值对象
      * @return LocalDateTime
      */
@@ -1707,7 +1670,7 @@ public interface IRecord extends Comparable<IRecord> {
                     + "yyyyMMddHHmmss," //
                     + "yyyyMMddHHmm," //
                     + "yyyyMMddHH"//
-            ; // patterns 时间的格式字符串
+                    ; // patterns 时间的格式字符串
 
             for (String format : patterns.split("[,]+")) {
                 try {
@@ -1762,7 +1725,7 @@ public interface IRecord extends Comparable<IRecord> {
      * 按照 width=2, step=2 进行滑动 <br>
      * flag false: [1, 2][3, 4] <br>
      * flag true: [1, 2][3, 4] <br》
-     * 
+     *
      * @param <T>  数据元素类型
      * @param aa   数据集合
      * @param size 窗口大小
@@ -1783,7 +1746,7 @@ public interface IRecord extends Comparable<IRecord> {
      * 按照 width=2, step=2 进行滑动 <br>
      * flag false: [1, 2][3, 4] <br>
      * flag true: [1, 2][3, 4] <br》
-     * 
+     *
      * @param <T>        数据元素类型
      * @param collection 数据集合
      * @param size       窗口大小
@@ -1792,31 +1755,114 @@ public interface IRecord extends Comparable<IRecord> {
      * @return 滑动窗口列表
      */
     public static <T> Stream<List<T>> slidingS(final Collection<T> collection, final int size, final int step,
-            final boolean flag) {
-
+                                               final boolean flag) {
         final int n = collection.size();
         final ArrayList<T> arrayList = collection instanceof ArrayList // 类型检测
                 ? (ArrayList<T>) collection // 数组列表类型
                 : new ArrayList<T>(collection); // 其他类型
 
         // 当flag 为true 的时候 i的取值范围是: [0,n-size] <==> [0,n+1-size)
-        return Stream.iterate(0, i -> i < (flag ? n + 1 - size : n), i -> i + step) // 序列生成
+        return iterate(0, i -> i < (flag ? n + 1 - size : n), i -> i + step) // 序列生成
                 .map(i -> arrayList.subList(i, (i + size) > n ? n : (i + size)));
     }
 
     /**
-     * 比较器,需要 键名序列keys中的每个值对象带有比较能力:Comparable
-     * 
-     * @param keys 键名序列
-     * @return keys 序列的比较器
+     * Returns a sequential ordered {@code Stream} produced by iterative
+     * application of the given {@code next} function to an initial element,
+     * conditioned on satisfying the given {@code hasNext} predicate.  The
+     * stream terminates as soon as the {@code hasNext} predicate returns false.
+     *
+     * <p>{@code Stream.iterate} should produce the same sequence of elements as
+     * produced by the corresponding for-loop:
+     * <pre>{@code
+     *     for (T index=seed; hasNext.test(index); index = next.apply(index)) {
+     *         ...
+     *     }
+     * }</pre>
+     *
+     * <p>The resulting sequence may be empty if the {@code hasNext} predicate
+     * does not hold on the seed value.  Otherwise the first element will be the
+     * supplied {@code seed} value, the next element (if present) will be the
+     * result of applying the {@code next} function to the {@code seed} value,
+     * and so on iteratively until the {@code hasNext} predicate indicates that
+     * the stream should terminate.
+     *
+     * <p>The action of applying the {@code hasNext} predicate to an element
+     * <a href="../concurrent/package-summary.html#MemoryVisibility"><i>happens-before</i></a>
+     * the action of applying the {@code next} function to that element.  The
+     * action of applying the {@code next} function for one element
+     * <i>happens-before</i> the action of applying the {@code hasNext}
+     * predicate for subsequent elements.  For any given element an action may
+     * be performed in whatever thread the library chooses.
+     *
+     * @param <T>     the type of stream elements
+     * @param seed    the initial element
+     * @param hasNext a predicate to apply to elements to determine when the
+     *                stream must terminate.
+     * @param next    a function to be applied to the previous element to produce
+     *                a new element
+     * @return a new sequential {@code Stream}
+     * @since 9
      */
-    public static Comparator<IRecord> cmp(final List<String> keys) {
-        return IRecord.cmp(keys.toArray(String[]::new), true);
+    public static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next) {
+        Objects.requireNonNull(next);
+        Objects.requireNonNull(hasNext);
+        Spliterator<T> spliterator = new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE,
+                Spliterator.ORDERED | Spliterator.IMMUTABLE) {
+            T prev;
+            boolean started, finished;
+
+            @Override
+            public boolean tryAdvance(Consumer<? super T> action) {
+                Objects.requireNonNull(action);
+                if (finished)
+                    return false;
+                T t;
+                if (started)
+                    t = next.apply(prev);
+                else {
+                    t = seed;
+                    started = true;
+                }
+                if (!hasNext.test(t)) {
+                    prev = null;
+                    finished = true;
+                    return false;
+                }
+                action.accept(prev = t);
+                return true;
+            }
+
+            @Override
+            public void forEachRemaining(Consumer<? super T> action) {
+                Objects.requireNonNull(action);
+                if (finished)
+                    return;
+                finished = true;
+                T t = started ? next.apply(prev) : seed;
+                prev = null;
+                while (hasNext.test(t)) {
+                    action.accept(t);
+                    t = next.apply(t);
+                }
+            }
+        };
+        return StreamSupport.stream(spliterator, false);
     }
 
     /**
      * 比较器,需要 键名序列keys中的每个值对象带有比较能力:Comparable
-     * 
+     *
+     * @param keys 键名序列
+     * @return keys 序列的比较器
+     */
+    public static Comparator<IRecord> cmp(final List<String> keys) {
+        return IRecord.cmp(keys.stream().toArray(String[]::new), true);
+    }
+
+    /**
+     * 比较器,需要 键名序列keys中的每个值对象带有比较能力:Comparable
+     *
      * @param <T>    元素类型
      * @param <U>    具有比较能力的类型
      * @param keys   keys 键名序列
@@ -1825,13 +1871,13 @@ public interface IRecord extends Comparable<IRecord> {
      * @return keys 序列的比较器
      */
     public static <T, U extends Comparable<?>> Comparator<IRecord> cmp(final List<String> keys,
-            final BiFunction<String, T, U> mapper, final boolean asc) {
-        return IRecord.cmp(keys.toArray(String[]::new), mapper, asc);
+                                                                       final BiFunction<String, T, U> mapper, final boolean asc) {
+        return IRecord.cmp(keys.stream().toArray(String[]::new), mapper, asc);
     }
 
     /**
      * 比较器,需要 键名序列keys中的每个值对象带有比较能力:Comparable
-     * 
+     *
      * @param keys 键名序列
      * @return keys 序列的比较器
      */
@@ -1841,7 +1887,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 比较器,需要 键名序列keys中的每个值对象带有比较能力:Comparable
-     * 
+     *
      * @param keys 键名序列
      * @param asc  是否升序,true 表示升序,小值在前,false 表示降序,大值在前
      * @return keys 序列的比较器
@@ -1852,7 +1898,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 比较器,需要 键名序列keys中的每个值对象带有比较能力:Comparable
-     * 
+     *
      * @param <T>    元素类型
      * @param <U>    具有比较能力的类型
      * @param keys   键名序列
@@ -1862,7 +1908,7 @@ public interface IRecord extends Comparable<IRecord> {
      */
     @SuppressWarnings("unchecked")
     public static <T, U extends Comparable<?>> Comparator<IRecord> cmp(final String keys[],
-            final BiFunction<String, T, U> mapper, final boolean asc) {
+                                                                       final BiFunction<String, T, U> mapper, final boolean asc) {
 
         final BiFunction<String, T, U> final_mapper = mapper == null
                 ? (String i, T o) -> o instanceof Comparable ? (U) o : (U) (o + "")
@@ -1906,11 +1952,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 二元算术运算符号 除法<br>
-     * 
+     * <p>
      * 非数字 则 返回第一个值
-     * 
-     * @param biop 归并器 (t,u)->v
-     * @return (record0,record1)->record2
+     *
+     * @return (record0, record1)->record2
      */
     static BinaryOperator<IRecord> divide() {
 
@@ -1919,11 +1964,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 二元算术运算符号 乘法 <br>
-     * 
+     * <p>
      * 非数字 则 返回第一个值
-     * 
-     * @param biop 归并器 (t,u)->v
-     * @return (record0,record1)->record2
+     *
+     * @return (record0, record1)->record2
      */
     static BinaryOperator<IRecord> multiply() {
 
@@ -1932,11 +1976,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 二元算术运算符号 减法 <br>
-     * 
+     * <p>
      * 非数字 则 返回第一个值
-     * 
-     * @param biop 归并器 (t,u)->v
-     * @return (record0,record1)->record2
+     *
+     * @return (record0, record1)->record2
      */
     static BinaryOperator<IRecord> subtract() {
 
@@ -1945,11 +1988,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 二元算术运算符号 加法 <br>
-     * 
+     * <p>
      * 非数字 则 返回第一个值
-     * 
-     * @param biop 归并器 (t,u)->v
-     * @return (record0,record1)->record2
+     *
+     * @return (record0, record1)->record2
      */
     static BinaryOperator<IRecord> plus() {
 
@@ -1958,11 +2000,11 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 二元算术运算符号 <br>
-     * 
+     * <p>
      * 非数字 则 返回第一个值
-     * 
+     *
      * @param biop 归并器 (t,u)->v
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     static BinaryOperator<IRecord> binaryOp(final BinaryOperator<Double> biop) {
 
@@ -1978,10 +2020,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成一个 IRecord的二元运算法。 最大值
-     * 
+     *
      * @param <T>       度量器的数据类型
      * @param quantizer 度量器 t->number
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     @SuppressWarnings("unchecked")
     static <T> BinaryOperator<IRecord> max(final Function<T, Number> quantizer) {
@@ -1995,10 +2037,10 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成一个 IRecord的二元运算法。最小值
-     * 
+     *
      * @param <T>       度量器的数据类型
      * @param quantizer 度量器 t->number
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     @SuppressWarnings("unchecked")
     static <T> BinaryOperator<IRecord> min(final Function<T, Number> quantizer) {
@@ -2012,12 +2054,12 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成一个 IRecord的二元运算法。
-     * 
+     *
      * @param <T>    第一参数类型
      * @param <U>    第二参数类型
      * @param <V>    结果类型
      * @param bifunc 归并器 (t,u)->v
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     @SuppressWarnings("unchecked")
     static <T, U, V> BinaryOperator<IRecord> combine(final BiFunction<T, U, V> bifunc) {
@@ -2027,12 +2069,12 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成一个 IRecord的二元运算法。
-     * 
+     *
      * @param <T>    第一参数类型
      * @param <U>    第二参数类型
      * @param <V>    结果类型
      * @param bifunc 归并器 (k:键名,(t:左侧元素,u:右侧元素))->v
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     @SuppressWarnings("unchecked")
     static <T, U, V> BinaryOperator<IRecord> combine2(final BiFunction<String, Tuple2<T, U>, V> bifunc) {
@@ -2042,12 +2084,12 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成一个 IRecord的二元运算法。
-     * 
+     *
      * @param <T>    第一参数类型
      * @param <U>    第二参数类型
      * @param <V>    结果类型
      * @param bifunc 归并器 (i:键名索引,(t:左侧元素,u:右侧元素))->v
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     @SuppressWarnings("unchecked")
     static <T, U, V> BinaryOperator<IRecord> combine3(final BiFunction<Integer, Tuple2<T, U>, V> bifunc) {
@@ -2057,12 +2099,12 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 生成一个 IRecord的二元运算法。
-     * 
+     *
      * @param <T>    第一参数类型
      * @param <U>    第二参数类型
      * @param <V>    结果类型
      * @param bifunc 归并器 ((i:键名索引,k:键名),(t:左侧元素,u:右侧元素))->v
-     * @return (record0,record1)->record2
+     * @return (record0, record1)->record2
      */
     @SuppressWarnings("unchecked")
     static <T, U, V> BinaryOperator<IRecord> combine4(
@@ -2094,7 +2136,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 可枚举 转 列表
-     * 
+     *
      * @param <T>      元素类型
      * @param iterable 可枚举类
      * @param maxSize  最大的元素数量
@@ -2108,10 +2150,9 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * 可枚举 转 列表
-     * 
+     *
      * @param <T>      元素类型
      * @param iterable 可枚举类
-     * @param maxSize  最大的元素数量
      * @return 元素列表
      */
     public static <T> List<T> itr2list(final Iterable<T> iterable) {
@@ -2121,7 +2162,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * Record类型的T元素归集器
-     * 
+     *
      * @param <T> 元组值类型
      * @return IRecord类型的T元素归集器
      */
@@ -2131,7 +2172,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * Record类型的T元素归集器
-     * 
+     *
      * @param <T>    元素类型
      * @param <U>    元组的1#位置占位符元素类型
      * @param mapper Tuple2 类型的元素生成器 t->(str,u)
@@ -2150,7 +2191,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * Map类型的T元素归集器
-     * 
+     *
      * @param <K>    键类型
      * @param <T>    元素类型
      * @param <U>    元组的1#位置占位符元素类型
@@ -2171,7 +2212,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * Map类型的T元素归集器
-     * 
+     *
      * @param <K>    键类型
      * @param <T>    元素类型
      * @param <U>    元组的1#位置占位符元素类型
@@ -2180,7 +2221,7 @@ public interface IRecord extends Comparable<IRecord> {
      * @return IRecord类型的T元素归集器
      */
     public static <T, K, U> Collector<T, ?, Map<K, U>> mapclc2(final Function<T, Tuple2<K, U>> mapper,
-            final BinaryOperator<U> biop) {
+                                                               final BinaryOperator<U> biop) {
         return Collector.of((Supplier<Map<K, List<U>>>) HashMap::new, (tt, t) -> {
             final Tuple2<K, U> tup = mapper.apply(t);
             tt.computeIfAbsent(tup._1, _k -> new ArrayList<>()).add(tup._2);
@@ -2199,7 +2240,7 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * Map类型的T元素归集器
-     * 
+     *
      * @param <K>    键类型
      * @param <T>    元素类型
      * @param <U>    元组的1#位置占位符元素类型
@@ -2212,11 +2253,9 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * Map类型的T元素归集器
-     * 
-     * @param <K>    键类型
-     * @param <T>    元素类型
-     * @param <U>    元组的1#位置占位符元素类型
-     * @param mapper Tuple2 类型的元素生成器 t->(k,u)
+     *
+     * @param <K> 键类型
+     * @param <T> 元素类型
      * @return IRecord类型的T元素归集器
      */
     public static <K, T> Collector<? super Tuple2<K, T>, ?, Map<K, T>> mapclc2() {
@@ -2230,15 +2269,14 @@ public interface IRecord extends Comparable<IRecord> {
 
     /**
      * IRecord 构建器
-     * 
-     * @author gbench
      *
+     * @author gbench
      */
     public static class Builder {
 
         /**
          * 构造IRecord构造器
-         * 
+         *
          * @param keys 键名列表的迭代器
          */
         public <T> Builder(final Iterable<T> keys) {
@@ -2254,8 +2292,7 @@ public interface IRecord extends Comparable<IRecord> {
          * 构造 IRecord <br>
          * 按照构建器的 键名序列表，依次把objs中的元素与其适配以生成 IRecord <br>
          * {key0:objs[0],key1:objs[1],key2:objs[2],...}
-         * 
-         * @param <T>  元素类型
+         *
          * @param objs 值序列, 若 objs 为 null 则返回null, <br>
          *             若 objs 长度不足以匹配 keys 将采用 循环补位的仿制给予填充 <br>
          *             若 objs 长度为0则返回一个空对象{},注意是没有元素且不是null的对象

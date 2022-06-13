@@ -28,7 +28,7 @@ public class DFrame implements Iterable<IRecord> {
      * @param data 源数据
      */
     public DFrame(final List<IRecord> data) {
-        this.rowsData = data.toArray(IRecord[]::new);
+        this.rowsData = data.stream().toArray(IRecord[]::new);
     }
 
     /**

@@ -81,8 +81,9 @@ public class JsonJunit {
                         asList("a,b,c,9".split(",")))));
         // 失败的请求
         println(MyRecord.send("http://localhost:8089/kvps/junit/sendData3",
-                REC("$method", "post", "$content_type", "multipart","name","key","keys","1,2,3".split(","),"file",new File("E:/slicee/temp/kvps/data/devops/project.json"))));
-    
+                REC("$method", "post", "$content_type", "multipart", "name", "key", "keys", "1,2,3".split(","), "file",
+                        new File("E:/slicee/temp/kvps/data/devops/project.json"))));
+
     }
 
     /**
@@ -102,6 +103,20 @@ public class JsonJunit {
         println(filename_of.apply("a/b/c/d.jpg"));
         println(extension_of.apply("d.jpg"));
         println(IRecord.FT("'$0'", extension_of.apply("abc")));
+    }
+
+    /**
+     * slidingS 的测试
+     */
+    @Test
+    public void qux2() {
+        IRecord.slidingS(Arrays.asList(1, 2, 3, 4, 5, 6), 3, 1, false).forEach(e -> {
+            println(e);
+        });
+        println("--------------------");
+        IRecord.slidingS(Arrays.asList(1, 2, 3, 4, 5, 6), 3, 1, true).forEach(e -> {
+            println(e);
+        });
     }
 
 }

@@ -32,9 +32,8 @@ import gbench.util.json.MyJson;
 
 /**
  * 数据记录对象的实现
- * 
- * @author gbench
  *
+ * @author gbench
  */
 public class MyRecord implements IRecord, Serializable {
 
@@ -45,7 +44,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 构造数据记录对象
-     * 
+     *
      * @param data IRecord数据
      */
     public MyRecord(final Map<?, ?> data) {
@@ -57,7 +56,6 @@ public class MyRecord implements IRecord, Serializable {
     /**
      * 默认构造函数 <br>
      * 构造空数据记录 {}
-     * 
      */
     public MyRecord() {
         this(new LinkedHashMap<String, Object>());
@@ -91,7 +89,7 @@ public class MyRecord implements IRecord, Serializable {
     }
 
     /**
-     * 
+     *
      */
     @Override
     public Object get(final String key) {
@@ -122,7 +120,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 转换成 json 格式
-     * 
+     *
      * @param json json字符串
      * @return IRecord
      */
@@ -132,7 +130,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 转换成 json 格式
-     * 
+     *
      * @param json json字符串
      * @throws Exception
      */
@@ -142,7 +140,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 转换成 json 格式
-     * 
+     *
      * @param obj 值对象
      * @return json 字符串
      */
@@ -152,7 +150,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 转换成 json 格式,带有异常抛出
-     * 
+     *
      * @param obj 值对象
      * @return json 字符串
      * @throws Exception
@@ -163,7 +161,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * Iterable 转 List
-     * 
+     *
      * @param <T>      元素类型
      * @param iterable 可迭代类型
      * @param maxSize  最大元素长度
@@ -178,7 +176,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 标准版的记录生成器, map 生成的是LinkedRecord
-     * 
+     *
      * @param <T> 类型占位符
      * @param kvs 键,值序列:key0,value0,key1,value1,.... <br>
      *            Map结构（IRecord也是Map结构） 或是 键名,键值 序列。即 build(map) 或是
@@ -234,20 +232,16 @@ public class MyRecord implements IRecord, Serializable {
             } else if (single instanceof IRecord) {// IRecord 对象类型 复制对象数据
                 data.putAll(((IRecord) single).toMap());
             } else if (single instanceof Collection) {// Collection 对象类型 复制对象数据
-                @SuppressWarnings("unchecked")
-                final Collection<Object> coll = (Collection<Object>) single;
+                @SuppressWarnings("unchecked") final Collection<Object> coll = (Collection<Object>) single;
                 put_iterable.accept(coll);
             } else if (single instanceof Iterable) {// Iterable 对象类型 复制对象数据
-                @SuppressWarnings("unchecked")
-                final Iterable<Object> iterable = (Iterable<Object>) single;
+                @SuppressWarnings("unchecked") final Iterable<Object> iterable = (Iterable<Object>) single;
                 put_iterable.accept(iterable);
             } else if (single instanceof Iterator) {// Iterable 对象类型 复制对象数据
-                @SuppressWarnings("unchecked")
-                final Iterable<Object> iterable = () -> (Iterator<Object>) single;
+                @SuppressWarnings("unchecked") final Iterable<Object> iterable = () -> (Iterator<Object>) single;
                 put_iterable.accept(iterable);
             } else if (single instanceof Stream) {// stream 对象类型 复制对象数据
-                @SuppressWarnings("unchecked")
-                final Stream<Object> stream = (Stream<Object>) single;
+                @SuppressWarnings("unchecked") final Stream<Object> stream = (Stream<Object>) single;
                 put_stream.accept(stream);
             } else if (single instanceof String) { // 字符串类型的单个参数
                 final String line = single.toString();
@@ -289,7 +283,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 简单的http 请求
-     * 
+     *
      * @param url 请求url
      * @return 请求返回结果
      */
@@ -299,7 +293,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 简单的http 请求
-     * 
+     *
      * @param url    请求url
      * @param params 请求参数,$content_type,$conn_timeout,$read_timeout 读写参数
      * @return 请求返回结果
@@ -319,18 +313,18 @@ public class MyRecord implements IRecord, Serializable {
                     .map(e -> e.toLowerCase()) // 统一使用小写格式
                     .map(e -> {
                         switch (e) {
-                        case "form": { // 表单类型
-                            return APPLICATION_WWW_FORM_URLENCODED;
-                        }
-                        case "json": { // JSON 类型
-                            return APPLICATION_JSON;
-                        }
-                        case "multipart": { // JSON 类型
-                            return MULTIPART_FORM;
-                        }
-                        default: { // 默认类型
-                            return e;
-                        }
+                            case "form": { // 表单类型
+                                return APPLICATION_WWW_FORM_URLENCODED;
+                            }
+                            case "json": { // JSON 类型
+                                return APPLICATION_JSON;
+                            }
+                            case "multipart": { // JSON 类型
+                                return MULTIPART_FORM;
+                            }
+                            default: { // 默认类型
+                                return e;
+                            }
                         }
                     }).orElse(APPLICATION_JSON);
             final String method = adjusted_params.strOpt("$method").orElse("GET").toUpperCase();
@@ -363,63 +357,64 @@ public class MyRecord implements IRecord, Serializable {
                     final String ctype = Optional.ofNullable(content_type.split("[;]")) //
                             .map(e -> e.length > 0 ? e[0] : null).orElse("application/json;");
                     switch (ctype) {
-                    case "application/json": { // json 格式
-                        final String data = req_params.json(); // json 数据
-                        bw.write(data);
-                        break;
-                    } // json
-                    case "multipart/form-data": { // json 格式
-                        final DataOutputStream dos = new DataOutputStream(outputStream);
-                        final Function<String, String> extension_of = line -> {
-                            final int i = line.lastIndexOf(".");
-                            return i >= 0 ? line.substring(i + 1) : "";
-                        };
-                        final Consumer<Tuple2<String, Object>> dispose = tup -> {
-                            final String key = tup._1;
-                            final Object value = tup._2;
-                            final String newLine = "\r\n";
-                            try {
-                                dos.write(boundary.getBytes());
-                                if (value instanceof File) {
-                                    final int BLOCK_SIZE = 1024;
-                                    final File file = (File) value;
-                                    final String filename = file.getName();
-                                    final String extension = extension_of.apply(filename);
-                                    final String mimetype = REC(
-                                            "jpg,application/octet-streamm,jpeg,application/octet-streamm," //
-                                                    .split(",")).strOpt(extension).orElse("application/octet-streamm");
-                                    final String tpl = "Content-Disposition:form-data;name=\"$0\";filename=\"$1\"$2Content-Type:$3;chartset=utf8$5$5";
-                                    final String ln = IRecord.FT(tpl, key, filename, newLine, mimetype, "text/plan",
-                                            newLine, newLine);
-                                    System.out.println(ln);
-                                    dos.write(ln.getBytes());
-                                    byte[] bb = null;
-                                    final FileInputStream fis = new FileInputStream(file);
-                                    while ((bb = fis.readNBytes(BLOCK_SIZE)).length > 0) { // 读写数据
-                                        dos.write(bb);
-                                    } // while
-                                    fis.close();
-                                } else {
-                                    final String tpl = "Content-Disposition:form-data;name=\"$0\"$1$1$2$3Content-Type:$4;chartset=utf8$5$5";
-                                    final String ln = IRecord.FT(tpl, key, newLine, value, newLine, "text/plain",
-                                            newLine, newLine);
-                                    System.out.println(ln);
-                                    dos.write(ln.getBytes());
+                        case "application/json": { // json 格式
+                            final String data = req_params.json(); // json 数据
+                            bw.write(data);
+                            break;
+                        } // json
+                        case "multipart/form-data": { // json 格式
+                            final DataOutputStream dos = new DataOutputStream(outputStream);
+                            final Function<String, String> extension_of = line -> {
+                                final int i = line.lastIndexOf(".");
+                                return i >= 0 ? line.substring(i + 1) : "";
+                            };
+                            final Consumer<Tuple2<String, Object>> dispose = tup -> {
+                                final String key = tup._1;
+                                final Object value = tup._2;
+                                final String newLine = "\r\n";
+                                try {
+                                    dos.write(boundary.getBytes());
+                                    if (value instanceof File) {
+                                        final int BLOCK_SIZE = 1024;
+                                        final File file = (File) value;
+                                        final String filename = file.getName();
+                                        final String extension = extension_of.apply(filename);
+                                        final String mimetype = REC(
+                                                "jpg,application/octet-streamm,jpeg,application/octet-streamm," //
+                                                        .split(",")).strOpt(extension).orElse("application/octet-streamm");
+                                        final String tpl = "Content-Disposition:form-data;name=\"$0\";filename=\"$1\"$2Content-Type:$3;chartset=utf8$5$5";
+                                        final String ln = IRecord.FT(tpl, key, filename, newLine, mimetype, "text/plan",
+                                                newLine, newLine);
+                                        System.out.println(ln);
+                                        dos.write(ln.getBytes());
+                                        final FileInputStream fis = new FileInputStream(file);
+                                        final byte[] bb = new byte[512];
+                                        int readback = -1;
+                                        while ((readback = (fis.read(bb))) != -1) {
+                                            dos.write(bb, 0, readback);
+                                        }
+                                        fis.close();
+                                    } else {
+                                        final String tpl = "Content-Disposition:form-data;name=\"$0\"$1$1$2$3Content-Type:$4;chartset=utf8$5$5";
+                                        final String ln = IRecord.FT(tpl, key, newLine, value, newLine, "text/plain",
+                                                newLine, newLine);
+                                        System.out.println(ln);
+                                        dos.write(ln.getBytes());
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        };
-                        req_params.tupleS().forEach(dispose);
-                        break;
-                    } // json
-                    default: { // 默认类型
-                        final String data = req_params.tupleS() // 键值序列
-                                .map(e -> e.map2(s -> urlencode(s + ""))) // URLencode
-                                .map(e -> IRecord.FT("$0=$1", e._1, e._2)) // 健名&键值
-                                .collect(Collectors.joining("&")); // 值的拼接
-                        bw.write(data);
-                    } // default
+                            };
+                            req_params.tupleS().forEach(dispose);
+                            break;
+                        } // json
+                        default: { // 默认类型
+                            final String data = req_params.tupleS() // 键值序列
+                                    .map(e -> e.map2(s -> urlencode(s + ""))) // URLencode
+                                    .map(e -> IRecord.FT("$0=$1", e._1, e._2)) // 健名&键值
+                                    .collect(Collectors.joining("&")); // 值的拼接
+                            bw.write(data);
+                        } // default
                     } // switch content_type
                 } // if method
             } // if req_params
@@ -439,7 +434,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 边界分割线
-     * 
+     *
      * @return 边界分割线
      */
     public static String generateBoundary() {
@@ -448,7 +443,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 文本文件的读取
-     * 
+     *
      * @param file 文本文件路径
      * @return 文本内容
      */
@@ -458,7 +453,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 文本文件的读取
-     * 
+     *
      * @param file 文本文件路径
      * @return 文本内容
      */
@@ -468,7 +463,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 读取文本文件
-     * 
+     *
      * @param file     文本文件
      * @param encoding 文件编码
      * @return 文本内容
@@ -479,7 +474,7 @@ public class MyRecord implements IRecord, Serializable {
 
     /**
      * 读取文本文件
-     * 
+     *
      * @param file     文本文件
      * @param encoding 文件编码
      * @return 文本内容
@@ -497,7 +492,7 @@ public class MyRecord implements IRecord, Serializable {
     /**
      * Translates a string into application/x-www-form-urlencoded format using utf8
      * encoding
-     * 
+     *
      * @param line 数据行
      * @return URL编码
      * @return application/x-www-form-urlencoded format
@@ -509,7 +504,7 @@ public class MyRecord implements IRecord, Serializable {
     /**
      * Translates a string into application/x-www-form-urlencoded format using a
      * specific encoding scheme
-     * 
+     *
      * @param line     String to be translated.
      * @param encoding The name of a supported characterencoding.
      * @return application/x-www-form-urlencoded format
