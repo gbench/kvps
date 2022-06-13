@@ -23,9 +23,9 @@ import gbench.util.lisp.IRecord;
 import gbench.util.lisp.MyRecord;
 
 /**
- * 
- * @author xuqinghua
+ * 简单的JSON的测试
  *
+ * @author xuqinghua
  */
 public class JsonJunit {
 
@@ -47,8 +47,7 @@ public class JsonJunit {
                 "address", REC("city", "shanghai", "street", "fahuazhen road 11 nong 11#201 "), //
                 "items", asList( //
                         REC("name", "a", "sex", "man", //
-                                "school", REC("name", "gongfu school", "master", "tortoise")),
-                        REC("name", "b", "sex", "woman", //
+                                "school", REC("name", "gongfu school", "master", "tortoise")), REC("name", "b", "sex", "woman", //
                                 "school", REC())), //
                 "empty_list", asList() // 空列表
         );
@@ -73,16 +72,12 @@ public class JsonJunit {
         println(IRecord.REC("http://localhost:8089/kvps/junit/sendData2?name=zhangsan&keys=1,2,3")); // url 结构
         println(IRecord.REC("E:/slicee/temp/kvps/data/devops/project.json")); // 文件结构
 
-        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData",
-                REC("$method", "post", "name", "reqdec", "keys", //
-                        asList("a,b,c".split(",")))));
-        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData2",
-                REC("$method", "post", "$content_type", "form", "name", "reqdec", "keys", //
-                        asList("a,b,c,9".split(",")))));
+        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData", REC("$method", "post", "name", "reqdec", "keys", //
+                asList("a,b,c".split(",")))));
+        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData2", REC("$method", "post", "$content_type", "form", "name", "reqdec", "keys", //
+                asList("a,b,c,9".split(",")))));
         // 失败的请求
-        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData3",
-                REC("$method", "post", "$content_type", "multipart", "name", "key", "keys", "1,2,3".split(","), "file",
-                        new File("E:/slicee/temp/kvps/data/devops/project.json"))));
+        println(MyRecord.send("http://localhost:8089/kvps/junit/sendData3", REC("$method", "post", "$content_type", "multipart", "name", "key", "keys", "1,2,3".split(","), "file", new File("E:/slicee/temp/kvps/data/devops/project.json"))));
 
     }
 
@@ -118,7 +113,7 @@ public class JsonJunit {
             println(e);
         });
 
-        IRecord.iterate(0,i->i<10,i->i+1).forEach(e->{
+        IRecord.iterate(0, i -> i < 10, i -> i + 1).forEach(e -> {
             println(e);
         });
     }
