@@ -117,6 +117,10 @@ public class JsonJunit {
         IRecord.slidingS(Arrays.asList(1, 2, 3, 4, 5, 6), 3, 1, true).forEach(e -> {
             println(e);
         });
+
+        IRecord.iterate(0,i->i<10,i->i+1).forEach(e->{
+            println(e);
+        });
     }
 
 }

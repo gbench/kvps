@@ -700,8 +700,8 @@ public interface IRecord extends Comparable<IRecord> {
      * @param lister 列表构建器 t->[u]
      * @return 列表结构的数据, U 类型的列表 [u]
      */
-    default <T, U> List<Object> lla(final int idx, final Function<T, List<U>> lister) {
-        return this.lla(this.keyOf(idx));
+    default <T, U> List<U> lla(final int idx, final Function<T, List<U>> lister) {
+        return this.lla(this.keyOf(idx), lister);
     }
 
     /**
@@ -1751,7 +1751,7 @@ public interface IRecord extends Comparable<IRecord> {
                 : new ArrayList<T>(collection); // 其他类型
 
         // 当flag 为true 的时候 i的取值范围是: [0,n-size] <==> [0,n+1-size)
-        return iterate(0, i -> i < (flag ? n + 1 - size : n), i -> i + step) // 序列生成
+        return IRecord.iterate(0, i -> i < (flag ? n + 1 - size : n), i -> i + step) // 序列生成
                 .map(i -> arrayList.subList(i, Math.min((i + size), n)));
     }
 
@@ -1791,18 +1791,17 @@ public interface IRecord extends Comparable<IRecord> {
      * @param next    a function to be applied to the previous element to produce
      *                a new element
      * @return a new sequential {@code Stream}
-     * @since 9
      */
-    static <T> Stream<T> iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next) {
+    static <T> Stream<T> iterate(final T seed, final Predicate<? super T> hasNext, final UnaryOperator<T> next) {
         Objects.requireNonNull(next);
         Objects.requireNonNull(hasNext);
-        Spliterator<T> spliterator = new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE,
+        final Spliterator<T> spliterator = new Spliterators.AbstractSpliterator<T>(Long.MAX_VALUE,
                 Spliterator.ORDERED | Spliterator.IMMUTABLE) {
             T prev;
             boolean started, finished;
 
             @Override
-            public boolean tryAdvance(Consumer<? super T> action) {
+            public boolean tryAdvance(final Consumer<? super T> action) {
                 Objects.requireNonNull(action);
                 if (finished)
                     return false;
@@ -1823,7 +1822,7 @@ public interface IRecord extends Comparable<IRecord> {
             }
 
             @Override
-            public void forEachRemaining(Consumer<? super T> action) {
+            public void forEachRemaining(final Consumer<? super T> action) {
                 Objects.requireNonNull(action);
                 if (finished)
                     return;
@@ -1836,6 +1835,7 @@ public interface IRecord extends Comparable<IRecord> {
                 }
             }
         };
+
         return StreamSupport.stream(spliterator, false);
     }
 

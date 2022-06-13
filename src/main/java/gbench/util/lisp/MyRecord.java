@@ -274,7 +274,9 @@ public class MyRecord implements IRecord, Serializable {
             } // if
         } else { // 键名减值序列
             for (int i = 0; i < n - 1; i += 2) {
-                data.put(kvs[i].toString(), kvs[i + 1]);
+                final String key = kvs[i] instanceof String ? kvs[i].toString() : kvs[i] + "";
+                final Object value = kvs[i + 1];
+                data.put(key, value);
             } // for
         } // if
 
