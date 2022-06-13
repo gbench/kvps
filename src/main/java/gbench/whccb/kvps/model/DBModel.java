@@ -4,6 +4,7 @@ import static gbench.util.io.Output.println;
 import static gbench.util.lisp.IRecord.FT;
 import static gbench.util.lisp.IRecord.REC;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -26,11 +27,11 @@ public class DBModel {
 
     /**
      * 数据库模型
-     * 
+     *
      * @param ds 数据源
      */
     public DBModel(final DataSource ds,
-            @Value("${excel.data.devops.file:E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx}") String excel_data_devops_file) {
+                   @Value("${excel.data.devops.file:E:/slicee/ws/gitws/kvps/src/test/java/gbench/sandbox/weihai/data/devops_data.xlsx}") String excel_data_devops_file) {
         dataMain = new DataApp(ds);
         this.initalize(excel_data_devops_file);
     }
@@ -71,16 +72,18 @@ public class DBModel {
         }); // withTransaction
 
         // 加载devops数据
-        if (excel_data_devops_file != null) {
+        if (excel_data_devops_file != null && new File(excel_data_devops_file).exists()) {
             this.loadXlsx(excel_data_devops_file);
+        } else {
+            println(IRecord.FT("文件:'$0' 不存在!",excel_data_devops_file));
         }
     }
 
     /**
      * 查看项目的人员的名单
-     * 
+     *
      * @param proj_key 项目主键
-     * @return 人员名单,[{id,name}]
+     * @return 人员名单, [{id,name}]
      */
     public List<Map<String, Object>> teamGroup(final String proj_key) {
         return this.dataMain.sql2dframe("select * from T_USER") //
@@ -88,7 +91,6 @@ public class DBModel {
     }
 
     /**
-     * 
      * @param path
      */
     public void loadXlsx(final String path) {
