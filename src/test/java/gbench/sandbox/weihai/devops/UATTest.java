@@ -12,7 +12,12 @@ import gbench.util.lisp.IRecord;
 import gbench.whccb.client.DevOpsClient;
 
 /**
- * 
+ *
+ * 3.2.14 UAT 测试。
+ * 3.2.14.10.2流程说明 （ 测试中心负责人发起 ）
+ * 字段列表：3.2.14.10.4.3
+ *  需求条目：关联需求。
+ *
  * @author xuqinghua
  *
  */

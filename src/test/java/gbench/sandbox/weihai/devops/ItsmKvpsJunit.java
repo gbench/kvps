@@ -41,7 +41,12 @@ public class ItsmKvpsJunit extends ItsmKvpsClient {
     }
 
     /**
-     * 需求分解
+     * 项目需求管理 的前提准备：
+     * REQ:3.3
+     * 1)用户可发起日常需求申请流程，审批通过后需要将需求推送到DevOps平台，
+     * 2)DevOps对需求进行拆解排期开发。
+     * 3)DevOps拆分子需求，需要将子需求回传给ITSM平台。(项目需求在DevOps拆分后也需要同步给ITSM)
+     *
      */
     @Test
     public void foo_reqents() {
@@ -55,7 +60,13 @@ public class ItsmKvpsJunit extends ItsmKvpsClient {
     }
 
     /**
+     * 3.2.14 UAT 测试。
+     * 3.2.14.10.2流程说明 （ 测试中心负责人发起 ）
+     * 字段列表：3.2.14.10.4.3
+     * 需求条目：关联需求。
+     *
      * 提测请求
+     *
      */
     @Test
     public void foo_uattest_apply() {

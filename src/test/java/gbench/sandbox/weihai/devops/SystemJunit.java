@@ -12,6 +12,10 @@ import gbench.util.lisp.DFrame;
 import gbench.util.lisp.IRecord;
 import gbench.whccb.client.DevOpsClient;
 
+/**
+ * 项目归属于系统
+ * 创建项目前 必须选定系统
+ */
 public class SystemJunit extends DevOpsClient {
 
     /**

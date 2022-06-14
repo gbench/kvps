@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.StreamSupport;
 
 import gbench.util.lisp.IRecord;
 
@@ -31,7 +34,6 @@ public class DevOpsClient extends MyHttpClient {
     }
 
     /**
-     * 
      * @param url
      * @return
      */
@@ -41,7 +43,6 @@ public class DevOpsClient extends MyHttpClient {
     }
 
     /**
-     * 
      * @param api
      * @param params
      * @return
@@ -54,7 +55,6 @@ public class DevOpsClient extends MyHttpClient {
     }
 
     /**
-     * 
      * @param api
      * @param params
      * @return
@@ -68,7 +68,7 @@ public class DevOpsClient extends MyHttpClient {
 
     /**
      * 时间戳对象id
-     * 
+     *
      * @return 时间戳对象id
      */
     public String oid() {
@@ -85,16 +85,39 @@ public class DevOpsClient extends MyHttpClient {
 
     /**
      * 根据流程ID提取审批节点(流程审批记录)
-     * 
+     *
      * @param flowId 流程id
      * @return
      */
-    public List<Map<String, Object>> approvalNodes(final String flowId) {
+    public List<Map<String, Object>> approvalNodes(final Object flowId) {
         final List<Map<String, Object>> nodes = new ArrayList<Map<String, Object>>();
-        Arrays.stream("".split("[,]+"))
-                .map(e -> REC("actionName", "同意", "activityName", "项目申请部门-总经理-审批", "createDate",
-                        LocalDate.now().toString(), "createUserName", "zhangsan", "msg", "项目申请部门-总经理-审批-同意"))
-                .map(e -> e.toMap2()).forEach(nodes::add);
+        final Function<String, IRecord> tonode = s -> {
+            return REC("actionName", "同意", "activityName", "项目申请部门-总经理-审批", "createDate",
+                    LocalDate.now().toString(), "createUserName", s, "msg", "项目申请部门-总经理-审批-同意");
+        };
+        final Consumer<Iterable<Object>> handle = itr -> {
+            StreamSupport.stream(itr.spliterator(), false).map(e -> {
+                if (e instanceof IRecord) {
+                    return e;
+                } else {
+                    return tonode.apply(e + "");
+                }
+            });
+        };
+
+        if (flowId == null) {
+            Arrays.stream("".split("[,]+"))
+                    .map(tonode)
+                    .map(e -> e.toMap2()).forEach(nodes::add);
+        } else if (flowId instanceof Integer) { // 真正的流程Id
+            // 查询数据库获取 nodes
+        } else if (flowId instanceof Iterable) { // 可遍历类型
+            final Iterable<Object> itr = (Iterable<Object>) flowId;
+            handle.accept(itr);
+        } else if (flowId.getClass().isAnnotation()) { // 数组类型
+            final Object[] itr = (Object[]) flowId;
+            handle.accept(Arrays.asList(itr));
+        }
 
         return nodes;
     }

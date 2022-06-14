@@ -17,7 +17,9 @@ import gbench.whccb.client.DevOpsClient;
 public class MileStoneJunit extends DevOpsClient {
     
     /**
-     * 项目创建
+     * 里程碑 3.4
+     * 事件：3.4.3
+     * 自动生成，手动修改，
      * 
      * @param params
      * @return
